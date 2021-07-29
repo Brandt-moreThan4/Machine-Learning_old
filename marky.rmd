@@ -1,0 +1,20 @@
+---
+title: "Marky"
+author: "Brandt"
+date: "7/28/2021"
+output:
+  md_document:
+    variant: markdown_github
+---
+
+
+
+# OMG. Isn't R Markdown so cool!!!!????
+
+```{r}
+
+random_nummys = rnorm(1000,100,25)
+hist(random_nummys)
+
+```
+
