@@ -48,8 +48,21 @@ ggplot(scrubbed_buildings, mapping = aes(log(size),y=Rent)) + geom_point()
 greenbuildings = greenbuildings[,-c(1,2)]
 
 
-# USe a regression to figure out whats important?
+# Use a regression to figure out whats important?
+# None of the coefficients are that inspiring. 
+
 lm_model = lm(Rent~.,greenbuildings)
 summary(lm_model)
+
+
+# Except cluster rent is highly significant and almost a 1 for 1 relationship.
+# Maybe green buildings happen to be located in more expensive clusters?
+
+cluster_rent = scrubbed_buildings %>% group_by(green_rating) %>% summarise(avg_cluster_rent = mean(cluster_rent))
+
+# Not true, as this group by shows
+
+ggplot(cluster_rent) + geom_col(aes(as.factor(green_rating),avg_cluster_rent,fill=green_rating))
+
 
 
