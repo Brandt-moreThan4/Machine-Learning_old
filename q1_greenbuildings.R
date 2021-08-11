@@ -1,6 +1,7 @@
 library(readr)
 library(dplyr)
 library(tidyverse)
+library(ggcorrplot)
 
 greenbuildings <- read_csv("greenbuildings.csv")
 
@@ -40,12 +41,21 @@ ggplot(scrubbed_buildings, mapping = aes(x=as.factor(green_rating),y=Rent)) + ge
 ggplot(scrubbed_buildings, mapping = aes(x=as.factor(renovated),y=Rent)) + geom_boxplot()
 ggplot(scrubbed_buildings, mapping = aes(x=as.factor(amenities),y=Rent)) + geom_boxplot() + facet_wrap(~renovated)
 
+
+
+ggplot(scrubbed_buildings, mapping = aes(x=size)) + geom_histogram()  + facet_wrap(~green_rating)
+  
+  
+  
+# Trying to show correlation between rating and size, then size and rent
+ggplot(scrubbed_buildings, mapping = aes(x=as.factor(green_rating),y=size)) + geom_boxplot()
+
 # Maybe upward trend in rent for size?
 ggplot(scrubbed_buildings, mapping = aes(log(size),y=Rent)) + geom_point() 
 
 
 
-greenbuildings = greenbuildings[,-c(1,2)]
+greenbuildings = greenbuildings[,-c(1,2)] # 3 get rid of id and cluster num
 
 
 # Use a regression to figure out whats important?
@@ -64,5 +74,7 @@ cluster_rent = scrubbed_buildings %>% group_by(green_rating) %>% summarise(avg_c
 
 ggplot(cluster_rent) + geom_col(aes(as.factor(green_rating),avg_cluster_rent,fill=green_rating))
 
-
+no_nas = na.omit(greenbuildings)
+corry = cor(no_nas)
+ggcorrplot(corry, hc.order = TRUE, outline.color = "white")
 
