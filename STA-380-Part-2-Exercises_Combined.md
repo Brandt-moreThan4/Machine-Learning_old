@@ -40,13 +40,16 @@ statistic for our purposes is the median, unless there is some
 justification or reasoning that would indicate that this newly
 constructed building will be out of the ordinary. From here on, we will
 confine the majority of our analysis to looking at just the median.
+
 ![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-4-1.png)
 
 ## Big Picture: Green vs Non-Green
 
 Now, as a starting point we can compare the median rent for green
 buildings vs non-green buildings.
+
 ![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-5-1.png)
+
 The median rent is certainly larger for green buildings vs non green
 buildings: $27.60 per square foot for green buildings vs $25.00 for
 non-green buildings. But this doesn’t really tell the full story. It is
@@ -72,6 +75,7 @@ possibility of these confounders.
 
 To get a feel for the potential interactions between variables in the
 data, we plot a correlation matrix.
+
 ![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-6-1.png)
 
 There are lots of interesting relationships displayed here, but we would
@@ -83,6 +87,7 @@ Class.
 
 First, examining the distribution of Age by green and non-green
 buildings, it’s clear that green buildings do tend to be younger.
+
 ![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-7-1.png)
 
 We know that green buildings tend to be younger, but do younger
@@ -217,3 +222,177 @@ do not recommend the developer should invest in the construction
 necessary to achieve a green certification. The data does not provide
 strong enough evidence to indicate that the green premium exists. The $
 5 million dollars could be more appropriately invested elsewhere.
+
+# Portfolio modeling
+
+We are using 8 ETFs as a our feasible set for portfolio construction:
+
+-   US Equities:
+    -   ARK: ARK Innovation ETF.
+    -   SDY: S&P 500 High Yield Dividend Aristocrats
+    -   XLF: Diversified, financial equities
+-   Fixed Income:
+    -   GOT: US Treasuries
+    -   HYG: US high yield, liquid, corporate bonds
+-   Foreign Equities:
+    -   EWJ: Large cap Japanese Stocks
+    -   MCHI: Chinese Equity Market
+-   Commodity
+    -   BNO: Brent Crude Oil
+
+## Portfolios
+
+From the 8 ETFs listed, we defined three portfolios:
+
+-   Equal Weight
+    -   This portfolio holds all 8 ETFs in equal proportions.
+-   Bond Heavy
+    -   This portfolio consists allocates 40% to each of the two bond
+        funds (GOT & HYG) and spreads the remaining 20% out equally
+        among the remaining 6 ETFS.
+-   Foreign Heavy
+    -   This portfolio consists allocates 40% to each of the two non-US
+        equity funds (EWJ & MCHI) and spreads the remaining 20% out
+        equally among the remaining 6 ETFS.
+
+The equal weight portfolio is chosen as it simply represents our default
+approach. We do not have opinions on the future returns of the ETFs so
+we would default to equal weighting all securities. We include the
+foreign-heavy portfolio because we would like to understand how our
+portfolio turns out if we decide to express the view that Chinese and
+Japanese equities will outperform US Equities. Last, we expect that the
+bond-heavy portfolio will be the safer choice, producing the lowest
+losses, but providing the least returns. This ‘safe’ portfolio is
+included because we want to understand the portfolio dynamics if we
+decide to invest conservatively.
+
+## Simulation
+
+We perform a bootstrap simulation by randomly sampling the historical,
+joint probability distribution of our 8 ETFs. The parameters of the
+simulation are listed below:
+
+| **Parameter**         | **Assumption** |
+|-----------------------|----------------|
+| Initial Capital       | $100,000       |
+| Days Per Simulation   | 20             |
+| Number of Simulations | 10,000         |
+
+## Simulation Results
+
+The results of the simulation are about in line with what you would
+expect. The foreign-heavy portfolio appears to be the riskiest, while
+offering the highest potential for return. The equal weight and
+bond-heavy portfolios offer lower expected wealth, but provide less
+variability in the potential outcome. We can now examine some plots and
+summary statistics to better understand the portfolios
+
+### Ending Wealth Distribution
+
+As a first look, we examine the distribution of endings wealth by
+portfolio. This gives us a quick and intuitive feel for what our
+portfolios could look like at the end of the 20 day period. The blue
+line below indicates the position of our starting wealth of $ 100,000.
+This gives us a baseline to compare the rest of the results too by
+highlighting the result if we did not invest in anything. In all three
+portfolios there is a significant portion of the distribution to the
+left of this line! If you are horrified by the idea of capital loss,
+these investments may not be for you.
+
+One additional point worth noting here is that the equal weight
+portfolio appears to have a similar distribution to the foreign heavy
+portfolio, except the equal weight portfolio does not suffer from the
+extreme left tail possibilities as the foreign heavy does. This is
+simply a consequence of effective diversification. The foreign heavy
+portfolio is heavily allocated to the Chinese and Japanese markets. In
+periods where those economies perform poorly, this portfolio will
+perform poorly.
+
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-19-1.png)
+
+### Profits and Summary Statistics
+
+After looking at the big picture, we can dive in further to get a more
+complete understanding of our portfolios. First, we plot the
+distribution of ending portfolio profits. These histograms are nearly
+identical to the total ending wealth distributions we just looked at,
+but these present the same information as a relative metric. Perhaps you
+want to understand your expected dollar profit from each portfolio. You
+can see this below:  
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-20-1.png)
+
+Next, we provide summary statistics for how the portfolios performed
+across the simulations:
+
+| Type          |  VAR\_.05 | Minimum_Profit | Max_Profit | Average_Profit |      MAD |     Range |
+|:--------------|----------:|---------------:|-----------:|---------------:|---------:|----------:|
+| Bondy Heavy   | -2,658.94 |      -8,213.04 |   8,455.31 |         560.80 | 1,637.10 | 16,668.35 |
+| Equal Weight  | -6,476.81 |     -21,877.84 |  19,577.51 |       1,178.33 | 4,149.52 | 41,455.36 |
+| Foreign Heavy | -8,005.90 |     -39,544.18 |  20,527.38 |         590.89 | 4,671.04 | 60,071.55 |
+
+Summary Stats for Portfolio Profits
+
+There is a lot of information to unpack from the table above.
+
+-   VAR: The 5% value at risk for each portfolio tells us the amount we
+    can expect to lose *at least* 5% of the time. This is helpful in
+    understanding the risk associated with the left tail of our
+    distribution. Even our safest investment, the bond portfolio will
+    lose over $2,500 5% of the time! The VARs of both equal weight and
+    foreign heavy take a big leap from the bond heavy portfolio, telling
+    us that these portfolios have a much higher chance of turning out
+    poorly.
+
+-   Dispersion: The VAR is helpful information, but does not tell us the
+    full story. For one thing, it ignores the worst case scenarios, but
+    it also ignores all of the upside! We see the worst case scenarios
+    through the minimum profit and get a feel for a best case scenario
+    by looking at the max profit. Again, foreign-heavy portfolio does
+    not look good. It gives us terrible worst case scenario, but a
+    maximum profit that is not even as large a the equal weight. Last,
+    the mean absolute deviation(MAD) tells us what the average deviation
+    is from the mean. This is probably the best one number summary for
+    understanding the risk of each portfolio.
+
+-   Expected Profit: Our average profits tell us what our expected
+    outcomes are. The interesting point here is that the foreign-heavy
+    portfolio only has a marginally higher expected profit than the bond
+    heavy portfolio and much less than the equal weight. That’s not a
+    lot of compensation for all of the risk you are taking on!
+
+The key takeaways are that the foreign-heavy portfolio is almost
+certainly a bad idea. It provides little reward in the form of expected
+returns to compensate us for potentially devastating worst case losses,
+and higher variability. A more difficult decision is to make a
+determination between the bond-heavy and equal weighted portfolios.
+
+### Stress Testing: Worst Case Scenarios
+
+As a final examination of the risk in each portfolio, we have selected
+the worst performing periods for each portfolio and plotted out the path
+of total wealth that occurred over the 20 day period. The idea here, is
+to explore on an emotional level, how the worst case scenarios would
+have felt in real time. It can be easy to look at summary statistics in
+a calm setting and rationally explore which portfolio is best, but
+actually living through bear markets is a different story all together.
+
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-22-1.png)
+Ouch! These would have been a pretty painful experiences for just a 20
+day period. The foreign-heavy portfolio stands out again for its
+remarkable ability to disappoint. This portfolio has a one day drop that
+would have been difficult to stomach in real time. Losing such a
+substantial portion of your wealth in a day would give even the thickest
+skin investors pause.
+
+## Concluding Thoughts
+
+Choosing a portfolio is no simple endeavor. What portfolio is “correct”
+can differ among people based on their particular circumstances. Time
+horizon, liquidity needs, and risk tolerance are among three of the top
+factors, but there can be many variables at play. What we can help to
+do, is provide information that should help investors make the most
+informed decision possible. In this particular case, we were able to
+essentially eliminate the foreign-heavy portfolio from consideration
+which will allow the investor to choose between the remaining
+portfolios, based on which one more closely aligns with their personal
+needs.
