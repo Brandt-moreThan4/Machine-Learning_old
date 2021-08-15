@@ -68,7 +68,7 @@ summary(lm_model)
 # Except cluster rent is highly significant and almost a 1 for 1 relationship.
 # Maybe green buildings happen to be located in more expensive clusters?
 
-cluster_rent = scrubbed_buildings %>% group_by(green_rating) %>% summarise(avg_cluster_rent = mean(cluster_rent))
+grouped_rent = scrubbed_buildings %>% group_by(green_rating,class_a) %>% summarise(avg_rent = mean(Rent))
 
 # Not true, as this group by shows
 
@@ -77,4 +77,7 @@ ggplot(cluster_rent) + geom_col(aes(as.factor(green_rating),avg_cluster_rent,fil
 no_nas = na.omit(greenbuildings)
 corry = cor(no_nas)
 ggcorrplot(corry, hc.order = TRUE, outline.color = "white")
+
+
+ggplot(grouped_rent) + geom_col(aes(x=green_rating,y=avg_rent,fill=class_a))
 

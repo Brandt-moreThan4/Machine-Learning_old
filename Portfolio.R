@@ -6,7 +6,7 @@ library(foreach)
 
 
 # Get ETs
-my_etfs = c("ARKK", "SDY", "GOVT",'BNO','FXY','XLF','MCHI','HYG')
+my_etfs = c("ARKK", "SDY", "GOVT",'BNO','EWJ','XLF','MCHI','HYG')
 etf_count = length(my_etfs)
 
 # 5 years of data
@@ -25,7 +25,7 @@ all_returns = cbind( ClCl(ARKKa),
                      ClCl(SDYa),
                      ClCl(GOVTa),
                      ClCl(BNOa),
-                     ClCl(FXYa),
+                     ClCl(EWJa),
                      ClCl(XLFa),
                      ClCl(MCHIa),
                      ClCl(HYGa))
@@ -38,17 +38,18 @@ head(all_returns)
 allocation_equal = rep(1/etf_count,etf_count)
 
 
-# Create bond allocation. 60% in two bond funds. Equal weight placed in the remaining
+# Create bond allocation. 80% in two bond funds. Equal weight placed in the remaining
 bond_allocation = .8
 non_bond = (1-bond_allocation)/6
 allocation_bond_heavy = rep(non_bond,etf_count)
-allocation_bond_heavy[c(3,4)] = bond_allocation/2
+allocation_bond_heavy[c(3,8)] = bond_allocation/2
+
 
 # Foreign Heavy
 foreign_allocation = .8
-non_foreign = (1-foreign_allocation)/5
+non_foreign = (1-foreign_allocation)/6
 allocation_foreign = rep(non_foreign,etf_count)
-allocation_foreign[c(4,5,6)] = foreign_allocation/3
+allocation_foreign[c(5,7)] = foreign_allocation/3
 
 
 
