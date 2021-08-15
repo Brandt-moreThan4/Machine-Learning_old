@@ -2,7 +2,9 @@
 title: 'STA 380, Part 2: Exercises'
 author: "Brandt"
 date: "8/5/2021"
-output: pdf_document
+output:
+  md_document:
+    variant: markdown_github
 ---
 
 
@@ -20,11 +22,17 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ```{r, include=FALSE}
 # Load libraries
+set.seed(42)
 library(readr)
 library(dplyr)
 library(tidyverse)
 library(ggcorrplot)
 library(moments)
+
+library(mosaic)
+library(quantmod)
+library(foreach)
+
 ```
 
 
@@ -33,7 +41,7 @@ library(moments)
 While the stats guru's analysis provided a good baseline for thinking about the issue, we believe his methodology fell short in several areas: particularly when it comes to understanding the potential for confounding variables.
 
 After examining the data, we do not feel that there is sufficient evidence, on a monetary basis, to justify the additional investment to construct the building in line with green certification standards.
-```{r, include=False}
+```{r, include=FALSE}
 
 # Read in the data
 greenbuildings <- read_csv("greenbuildings.csv")

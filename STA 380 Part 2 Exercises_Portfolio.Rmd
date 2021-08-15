@@ -182,8 +182,6 @@ for (simulation_num in 1:simulation_count) {
     bond_heavy_port = sum(bond_heavy_port) * portfolio_weights$allocation_bond_heavy
     foreign_heavy_port = sum(foreign_heavy_port) * portfolio_weights$allocation_foreign
     
-    
-    
   }
 
 }
