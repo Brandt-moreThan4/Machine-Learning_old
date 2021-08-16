@@ -1,3 +1,13 @@
+# STA 380, Part 2: Exercises
+
+## Group Members: Aditya Soni, Brandt Green, Bret Jaco, Emilio Cabrera
+
+### Link to Rmd File:
+
+[Project_Rmd_File](https://github.com/Brandt-moreThan4/Machine-Learning/blob/main/STA%20380%20Part%202%20Exercises_Combined.Rmd)
+
+   
+
 # Green Buildings
 
 While the stats guru’s analysis provided a good baseline for thinking
@@ -152,8 +162,6 @@ with a fitted, single-predictor, regression line. The association
 between local building rents and rent appears to be strong indeed
 although the variance does increase as the cluster rent increases.
 
-    ## `geom_smooth()` using formula 'y ~ x'
-
 ![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-13-1.png)
 
 ## Regression Model
@@ -231,13 +239,13 @@ million dollars could be more appropriately invested elsewhere.
 
 ## Time Series
 
-A key component when traveling via flight surrounds *time delays*. In
-fact a standard rule of thumbs is to arrive at an airport approximately
-two hours prior to one’s flight departure. The two key figures part of
-our assignment analyze the time delays surrounding time of year and time
-of day for any given flight to/out of Austin-Bergstrom International
-Airport. These two figures are made to provide insight on minimizing
-delays when booking flights or on the day of flight.
+A key component when traveling via flight surrounds **time delays**. Our
+time series analysis is composed of annual, weekday and day of month
+analyses for flight time delays to/out of Austin-Bergstrom International
+Airport. The first plots are made to provide insight on minimizing
+delays when booking flights across a given point in time. The second
+figures are made to provide insight on minimizing time delays among the
+top four airline carriers.
 
 ### 1) When is the worst of time of the year for experiencing delays when flying to/out of Austin-Bergstrom International Airport?
 
@@ -640,11 +648,6 @@ student who likely isn’t too picky about what kind of water they drink.
 | computers     | 2.47 |
 | automotive    | 2.34 |
 
-    ##      politics        travel          news photo_sharing     computers 
-    ##      8.933042      5.608443      5.294032      2.542940      2.474527 
-    ##    automotive 
-    ##      2.336245
-
 **Traveling Businessman:** This segment has interests in politics,
 travel, and news and represents the traveling businessman. They would be
 a good group to target as they are frequently in airports and buying
@@ -676,3 +679,146 @@ specific archetype.
 
 NutrientH20 can target these market segments to improve their sales and
 popularity!
+
+     
+
+# Author Attribution
+
+## Loading libraries
+
+Load libraries like tm, tidyverse, slam, proxy, etc.
+
+## Defining functions and Reading the training data
+
+The readPlain function is defined, which reads in the lines from a text
+file. The content and authors of all text files (2500 files) are read-in
+and the data is stored in a Corpus object.
+
+## Training data - Pre-processing, removing the stop words, and Tokenization
+
+For the content of training files, some cleaning and pre-processing is
+done such as: \* Converting all text to lowercase, removing all numbers,
+removing all punctuation, stripping extra white spaces, and removing the
+stop words. \* A DTM(document-term matrix) is created where the words in
+the documents are the columns and each document is a row.
+Standardization of the DTM is done using TF-IDF.
+
+    ## <<DocumentTermMatrix (documents: 2500, terms: 32570)>>
+    ## Non-/sparse entries: 537861/80887139
+    ## Sparsity           : 99%
+    ## Maximal term length: 40
+    ## Weighting          : term frequency (tf)
+
+    ## <<DocumentTermMatrix (documents: 10, terms: 20)>>
+    ## Non-/sparse entries: 48/152
+    ## Sparsity           : 76%
+    ## Maximal term length: 11
+    ## Weighting          : term frequency (tf)
+    ## Sample             :
+    ##     Terms
+    ## Docs access accounts agencies also announced bogus business called character
+    ##   1       1        1        1    1         1     2        2      1         4
+    ##   10      4        0        0    1         0     0        1      0         4
+    ##   2       0        0        0    2         1     0        1      0         4
+    ##   3       2        0        0    0         0     0        0      0         4
+    ##   4       0        0        0    0         1     0        1      0         4
+    ##   5       0        0        0    0         1     0        1      0         4
+    ##   6       0        0        0    0         0     0        0      0         4
+    ##   7       0        0        1    1         0     0        0      1         4
+    ##   8       0        0        0    0         0     0        1      0         4
+    ##   9       0        0        1    0         0     0        1      0         4
+    ##     Terms
+    ## Docs charged
+    ##   1        1
+    ##   10       0
+    ##   2        0
+    ##   3        0
+    ##   4        0
+    ##   5        0
+    ##   6        0
+    ##   7        0
+    ##   8        1
+    ##   9        1
+
+    ## <<DocumentTermMatrix (documents: 2500, terms: 801)>>
+    ## Non-/sparse entries: 240686/1761814
+    ## Sparsity           : 88%
+    ## Maximal term length: 18
+    ## Weighting          : term frequency - inverse document frequency (normalized) (tf-idf)
+
+## Loading the Test Data
+
+Similar to train data, the test data is read-in and stored as a corpus
+object.
+
+    ## <<SimpleCorpus>>
+    ## Metadata:  corpus specific: 1, document level (indexed): 0
+    ## Content:  documents: 2500
+
+## Test data - Pre-processing, removing the stop words, and Tokenization
+
+Similar to train data, cleaning and pre-processing of test data is done.
+
+    ## <<SimpleCorpus>>
+    ## Metadata:  corpus specific: 1, document level (indexed): 0
+    ## Content:  documents: 2500
+
+## Making sure that training and test sets have the same columns (words)
+
+Since there are many additional words which don’t appear in the training
+dataset but are present in test dataset, we decided to remove all those
+words from the test dataset and only keep the ones common in both the
+datasets.
+
+    ## <<DocumentTermMatrix (documents: 2500, terms: 801)>>
+    ## Non-/sparse entries: 241658/1760842
+    ## Sparsity           : 88%
+    ## Maximal term length: 18
+    ## Weighting          : term frequency - inverse document frequency (normalized) (tf-idf)
+
+## Principal Component Analysis - Reducing the dimensions
+
+Since there are hundreds of words (variables) in the training and test
+dataset, it is better to reduce the number of variables using principal
+component analysis. 400 principal components explain almost 80% of the
+variance. Thus, taking 400 PCs and building the models.
+
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-47-1.png)![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-47-2.png)
+
+# Classification models
+
+After preparing the train and test datasets, we can now start to build
+classification models and test their accuracy on test dataset.
+
+## KNN
+
+Starting with KNN classification, we take K=10 and the accuracy we get
+is 35.4%
+
+    ## [1] 886
+
+    ## [1] 35.44
+
+## Naive Bayes
+
+Using naive bayes model, we get an accuracy of 46.92%.
+
+    ##           Length Class  Mode     
+    ## apriori    50    table  numeric  
+    ## tables    400    -none- list     
+    ## levels     50    -none- character
+    ## isnumeric 400    -none- logical  
+    ## call        4    -none- call
+
+    ## [1] 46.92
+
+## Random Forest
+
+With a random forest model, the accuracy obtained is 70.6%
+
+    ## [1] 70.6
+
+## Conclusion
+
+Thus, 3 classification models are made and the most accurate model was
+found to be Random Forest with an accuracy of 70.6%

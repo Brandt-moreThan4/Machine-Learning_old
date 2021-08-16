@@ -7,14 +7,19 @@ output:
     variant: markdown_github
 ---
 
+# STA 380, Part 2: Exercises
+## Group Members: Aditya Soni, Brandt Green, Bret Jaco, Emilio Cabrera
+
+### Link to Rmd File:
+[Project_Rmd_File](https://github.com/Brandt-moreThan4/Machine-Learning/blob/main/STA%20380%20Part%202%20Exercises_Combined.Rmd)
 
 ```{r, include=FALSE}
 #NOTE!! This whole file will probably take a few minutes to run because of the simulations and cross validations done in certain problems.
 ```
 
 
-```{r setup, include=FALSE, warning = FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,message = FALSE, warning = FALSE)
 ```
 
 
@@ -31,13 +36,22 @@ library(moments)
 library(mosaic)
 library(quantmod)
 library(foreach)
-library(LICORS)  # for kmeans++
+library(LICORS) 
 library(arules)
 library(gridExtra)
+
+library(tm) 
+library(slam)
+library(proxy)
+library(magrittr)
+library(Rcpp)
+
 options(dplyr.summarise.inform = FALSE)
 
 ```
 
+\  
+\  
 
 # Green Buildings
 While the stats guru's analysis provided a good baseline for thinking about the issue, we believe his methodology fell short in several areas, particularly when it comes to understanding the potential for confounding variables.
@@ -220,7 +234,6 @@ Key takeaways from the model output. Age has a negative coefficient, class_a has
 Our final recommendation is: based on the data currently available, we do not recommend the developer should invest in the construction necessary to achieve a green certification. The data does not provide strong enough evidence to indicate that the green premium exists. The $5 million dollars could be more appropriately invested elsewhere.
 
 
-
 \  
 \  
 \  
@@ -259,7 +272,7 @@ df$AVG_Delay = (df$ArrDelay +
 
 ## Time Series
 
-A key component when traveling via flight surrounds *time delays*. In fact a standard rule of thumbs is to arrive at an airport approximately two hours prior to one’s flight departure. The two key figures part of our assignment analyze the time delays surrounding time of year and time of day for any given flight to/out of Austin-Bergstrom International Airport. These two figures are made to provide insight on minimizing delays when booking flights or on the day of flight. 
+A key component when traveling via flight surrounds **time delays**. Our time series analysis is composed of annual, weekday and day of month analyses for flight time delays to/out of Austin-Bergstrom International Airport. The first plots are made to provide insight on minimizing delays when booking flights across a given point in time. The second figures are made to provide insight on minimizing time delays among the top  four airline carriers.
 
 
 ### 1) When is the worst of time of the year for experiencing delays when flying to/out of Austin-Bergstrom International Airport?
@@ -826,7 +839,6 @@ like a typical college student who likely isn't too picky about what kind of wat
 
 ```{r echo=FALSE}
 knitr::kable(head(sort((clust$center[5,]*sigma + mu), decreasing=TRUE)), digits = 2)
-head(sort((clust$center[5,]*sigma + mu), decreasing=TRUE))
 ```
 **Traveling Businessman:** This segment has interests in politics, travel, and news and represents the traveling businessman.
 They would be a good group to target as they are frequently in airports and buying water bottles.
@@ -854,7 +866,241 @@ NutrientH20 can target these market segments to improve their sales and populari
 
 
 
+\  
+\  
+\  
+
+# Author Attribution
 
 
+## Loading libraries 
+Load libraries like tm, tidyverse, slam, proxy, etc.
+```{r}
+library(tm) 
+library(tidyverse)
+library(slam)
+library(proxy)
+library(magrittr)
+library(dplyr)
+library(ggplot2)
+library(Rcpp)
+```
+
+## Defining functions and Reading the training data
+The readPlain function is defined, which reads in the lines from a text file.
+The content and authors of all text files (2500 files) are read-in and the data is stored in a Corpus object. 
+
+```{r}
+readerPlain = function(fname){
+				readPlain(elem=list(content=readLines(fname)), 
+							id=fname, language='en') }
+
+#reading all the sub-folders in the train folder
+train_folders=Sys.glob('ReutersC50/C50train/*')
 
 
+#Getting all the file names in the sub-folders and making a vector with author names
+all_files=NULL
+labels=NULL
+
+for (x in train_folders) { 
+  author_name=substring(x,first=21)
+  article=Sys.glob(paste0(x,'/*.txt'))
+  all_files=append(all_files,article)
+  labels=append(labels,rep(author_name,length(article)))
+}
+
+#Reading the files and removing .txt
+files_combined = lapply(all_files, readerPlain) 
+names(files_combined) = all_files
+
+
+#Creating a text-mining corpus
+articles_raw = Corpus(VectorSource(files_combined))
+
+```
+
+## Training data - Pre-processing, removing the stop words, and Tokenization
+For the content of training files, some cleaning and pre-processing is done such as:
+* Converting all text to lowercase, removing all numbers, removing all punctuation, stripping extra white spaces, and removing the stop words.
+* A DTM(document-term matrix) is created where the words in the documents are the columns and each document is a row. Standardization of the DTM is done using TF-IDF.
+
+```{r}
+
+##Pre-processing and tokenization
+documents = articles_raw %>%
+  tm_map(content_transformer(tolower))  %>%             # make everything lowercase
+  tm_map(content_transformer(removeNumbers)) %>%        # remove numbers
+  tm_map(content_transformer(removePunctuation)) %>%    # remove punctuation
+  tm_map(content_transformer(stripWhitespace))          # remove excess white-space
+
+#remove stop words
+documents = tm_map(documents, content_transformer(removeWords), stopwords("en"))
+
+#Creating document-term matrix
+DTM_train = DocumentTermMatrix(documents)
+DTM_train
+
+#inspect
+inspect(DTM_train[1:10,1:20])
+
+#remove sparse terms
+DTM_train = removeSparseTerms(DTM_train, 0.95)
+
+#TF-IDF matrix
+train_tf_idf_mat = weightTfIdf(DTM_train)
+DTM_train = as.matrix(train_tf_idf_mat)
+train_tf_idf_mat 
+```
+
+## Loading the Test Data
+Similar to train data, the test data is read-in and stored as a corpus object.
+
+```{r}
+#reading all the sub-folders in the test folder
+test_folders=Sys.glob('ReutersC50/C50test/*')
+
+
+#Getting all the file names in the sub-folders and making a vector with author names
+test_all_files=NULL
+test_labels=NULL
+
+for (x in test_folders) { 
+author_name=substring(x,first=20)
+article=Sys.glob(paste0(x,'/*.txt'))
+test_all_files=append(test_all_files,article)
+test_labels=append(test_labels,rep(author_name,length(article)))
+}
+
+#Reading the files and removing .txt
+test_files_combined = lapply(test_all_files, readerPlain) 
+names(test_files_combined) = test_all_files
+#names(files_combined) = sub('.txt', '', names(files_combined))
+
+
+#Creating a text-mining corpus
+test_articles_raw = Corpus(VectorSource(test_files_combined))
+test_articles_raw
+```
+
+## Test data - Pre-processing, removing the stop words, and Tokenization
+Similar to train data, cleaning and pre-processing of test data is done.
+
+```{r}
+
+##Pre-processing and tokenization
+test_documents = test_articles_raw %>%
+  tm_map(content_transformer(tolower))  %>%             # make everything lowercase
+  tm_map(content_transformer(removeNumbers)) %>%        # remove numbers
+  tm_map(content_transformer(removePunctuation)) %>%    # remove punctuation
+  tm_map(content_transformer(stripWhitespace))          # remove excess white-space
+
+#remove stop words
+test_documents = tm_map(test_documents, content_transformer(removeWords), stopwords("en"))
+test_documents
+```
+
+## Making sure that training and test sets have the same columns (words)
+Since there are many additional words which don't appear in the training dataset but are present in test dataset, we decided to remove all those words from the test dataset and only keep the ones common in both the datasets.
+
+```{r}
+DTM_test=DocumentTermMatrix(test_documents,list(dictionary=colnames(DTM_train)))
+test_tf_idf_mat = weightTfIdf(DTM_test)
+DTM_test=as.matrix(test_tf_idf_mat) 
+test_tf_idf_mat
+
+DTM_train = DTM_train[,which(colSums(DTM_train) != 0)] 
+DTM_test = DTM_test[,which(colSums(DTM_test) != 0)]
+
+DTM_test_f = DTM_test[,intersect(colnames(DTM_test),colnames(DTM_train))]
+DTM_train_f = DTM_train[,intersect(colnames(DTM_test_f),colnames(DTM_train))]
+
+```
+
+
+## Principal Component Analysis - Reducing the dimensions
+Since there are hundreds of words (variables) in the training and test dataset, it is better to reduce the number of variables using principal component analysis. 
+400 principal components explain almost 80% of the variance. Thus, taking 400 PCs and building the models. 
+
+
+```{r}
+pca = prcomp(DTM_train_f,scale=TRUE)
+plot(pca,type='line') 
+
+var = apply(pca$x, 2, var)  
+prop = var/sum(var)
+plot(cumsum(pca$sdev^2/sum(pca$sdev^2)))
+
+#setting up datasets for final modelling
+train_class = data.frame(pca$x[,1:400])
+train_class['author']=labels
+train_load = pca$rotation[,1:400]
+test_class = scale(DTM_test_f) %*% train_load
+test_class = as.data.frame(test_class)
+test_class['author']=test_labels
+```
+
+# Classification models
+After preparing the train and test datasets, we can now start to build classification models and test their accuracy on test dataset. 
+
+## KNN
+Starting with KNN classification, we take K=10 and the accuracy we get is 35.4%
+
+```{r}
+library(class)
+train_knn_y=as.factor(train_class$author)
+test_knn_y=as.factor(test_class$author)
+train_knn_x=subset(train_class, select=-c(author))
+test_knn_x=subset(test_class,select=-c(author))
+
+
+set.seed(1)
+knn=knn(train_knn_x,test_knn_x,train_knn_y,k=10)
+#prediction
+knn_calc=as.data.frame(cbind(knn,test_knn_y))
+knn_check=ifelse(as.integer(knn)==as.integer(test_knn_y),1,0)
+sum(knn_check)
+sum(knn_check)*100/nrow(knn_calc) #802
+```
+
+
+## Naive Bayes
+Using naive bayes model, we get an accuracy of 46.92%.
+
+```{r}
+library(e1071)
+train_class$author=as.factor(train_class$author)
+test_class$author=as.factor(test_class$author)
+nb=naiveBayes(author~.,data=train_class)
+summary(nb)
+nb_predict=predict(nb,test_class)
+
+#predicted_nb=pred_naive
+#actual_nb=as.factor(ts_class$author)
+
+nb_check=as.data.frame(cbind(test_class$author,nb_predict))
+nb_check$mark=ifelse(nb_check$V1==nb_check$nb_predict,1,0)
+sum(nb_check$mark)*100/nrow(nb_check)
+
+```
+
+## Random Forest
+With a random forest model, the accuracy obtained is 70.6%
+
+```{r}
+library(randomForest)
+set.seed(1)
+rf=randomForest(author~.,data=train_class, mtry=10,importance=TRUE)
+
+#prediction
+rf_predict=predict(rf,data=test_class)
+
+#calculating accuracy
+rf_check=as.data.frame(cbind(test_class$author,rf_predict))
+rf_check$mark=ifelse(rf_check$V1==rf_check$rf_predict,1,0)
+sum(rf_check$mark)*100/nrow(rf_check)
+```
+
+
+## Conclusion
+Thus, 3 classification models are made and the most accurate model was found to be Random Forest with an accuracy of 70.6%
