@@ -1,27 +1,24 @@
-``` r
-#NOTE!! This whole file will probably take a few minutes to run because of the simulations and cross validations done in certain problems.
-```
-
 # Green Buildings
 
 While the stats guru’s analysis provided a good baseline for thinking
-about the issue, we believe his methodology fell short in several areas:
+about the issue, we believe his methodology fell short in several areas,
 particularly when it comes to understanding the potential for
 confounding variables.
 
 After examining the data, we do not feel that there is sufficient
-evidence, on a monetary basis, to justify the additional investment to
-construct the building in line with green certification standards.
+evidence, on a monetary basis, to justify the additional investment
+necessary to construct the building in line with green certification
+standards.
 
-## Data Cleaning:
+## Data Cleaning
 
 First, we can address the data cleaning aspect of the analysis. Are
-there any adjustments that should be made to the raw data se? The excel
+there any adjustments that should be made to the raw data set? The excel
 guru certainly felt that a certain amount of scrubbing should take
 place. He decided that because some of the buildings had low occupancy
 rates they should be excluded from the analysis due to their
 “weirdness”. To explore the validity of this scrubbing we examined the
-data points that the guru proposes we remove, we manually inspect these
+data points that the guru proposed be removed. We manually inspect these
 observations and we do not find any other “weirdness” associated with
 these points that would indicate they should be removed. There are 215
 data points with leasing rates less than 10 or 2.7% of the original data
@@ -43,14 +40,14 @@ vertical red line indicates the mean. We maintain that the appropriate
 statistic for our purposes is the median, unless there is some
 justification or reasoning that would indicate that this newly
 constructed building will be out of the ordinary. From here on, we will
-confine the majority of our analysis to looking at just the median.
+confine the majority of our analysis to looking at the median.
 
 ![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-5-1.png)
 
 ## Big Picture: Green vs Non-Green
 
 Now, as a starting point we can compare the median rent for green
-buildings vs non-green buildings.
+buildings vs non-green buildings, just as the guru did.
 
 ![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-6-1.png)
 
@@ -60,22 +57,23 @@ non-green buildings. But this doesn’t really tell the full story. It is
 too much a leap of faith to claim that this rental difference is due
 solely to the building’s green rating. We need to dig deeper to
 understand the data further and perhaps discover that the higher median
-rent differential could be attributed to another variable.
+rent differential could be attributed to another variable or factor.
 
 ## Confounders
 
 We need to do some basic exploration of our data set beyond what we have
-already done with a goal of understanding how a buildings green rating
-is related to both rent and other variables. You might hypothesize that
-green buildings are simply associated with other factors that are really
-driving the difference in the median rental value. “Going Green” is a
-newer phenomenon so we might expect that the majority of buildings that
-have green certifications are newer buildings and that this newness is
-what drives their rent higher. Perhaps buildings that are built with
-green certification standard in mind are also built with higher quality
-overall and that this higher quality, indicated by building class, is
-what is determining rent dispersion. We must examine the data for the
-possibility of these confounders.
+already done with the goal of understanding how a building’s green
+rating is related to both rent and other variables. One might
+hypothesize that green buildings are simply associated with other
+factors, which are really driving the difference in the median rental
+value. “Going Green” is a newer phenomenon so we might expect that the
+majority of buildings that have green certifications are newer buildings
+and that this newness is what drives their rent higher. Perhaps
+buildings that are built with green certification standard in mind are
+also built with higher quality overall and that this higher quality,
+indicated by building class, is what is truly determining rent
+dispersion. We must examine the data for the possibility of these
+confounders.
 
 To get a feel for the potential interactions between variables in the
 data, we plot a correlation matrix.
@@ -84,13 +82,13 @@ data, we plot a correlation matrix.
 
 There are lots of interesting relationships displayed here, but we would
 like to focus on a few that provide interesting information to the
-question at hand and test our hypothesized confounders: Age and Building
-Class.
+question at hand and allow us to test our hypothesized confounders: Age
+and Building Class.
 
 ### Age
 
 First, examining the distribution of Age by green and non-green
-buildings, it’s clear that green buildings do tend to be younger.
+buildings, it is clear that green buildings do tend to be younger.
 
 ![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-8-1.png)
 
@@ -98,7 +96,7 @@ We know that green buildings tend to be younger, but do younger
 buildings command a rent premium? To uncover a potential relationship
 here we create a new variable ‘younger’ that indicates if the building
 is below the median age of all buildings in our data set. This will
-allow us to control for the rent between young and old buildings:
+allow us to analyze the rent between young and old buildings:
 
 ![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-9-1.png)
 
@@ -109,8 +107,6 @@ buildings tend to have a higher rent. How can we untangle this!?
 
 We’ll dig further by breaking down median rent by both green rating and
 age:
-
-    ## `summarise()` has grouped output by 'green_rating'. You can override using the `.groups` argument.
 
 ![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-10-1.png)
 
@@ -135,9 +131,8 @@ are also class A buildings.
 ![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-11-1.png)
 
 Now we show a breakdown similar to Age, that allows us to control for
-being a class A building and examine the median of green vs non-green.
-
-    ## `summarise()` has grouped output by 'green_rating'. You can override using the `.groups` argument.
+being a class A building and examine the median rent of green vs
+non-green.
 
 ![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-12-1.png)
 
@@ -159,7 +154,7 @@ although the variance does increase as the cluster rent increases.
 
     ## `geom_smooth()` using formula 'y ~ x'
 
-![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-14-1.png)
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-13-1.png)
 
 ## Regression Model
 
@@ -209,25 +204,28 @@ is depicted below:
 
 Key takeaways from the model output. Age has a negative coefficient,
 class_a has a positive coefficient, and cluster rent has a positive
-coefficient. These match up with our previous analysis. Green Rating has
-a slightly positive coefficient of .5, but it is not statistically
-significant at the .05 level meaning that when we control for all of the
-factors in the data, the positive impact of green rating does not
-exhibit strong enough evidence that it truly exists. Another factor
-worth considering is that that the Energy Star coefficient is actually
-negative. This is interesting because if the developer does consider go
-ahead with a green certification, they would need to decide if they
-should get one or both certifications. Though it is not statistically
-significant, we suggest they prioritize compliance with the LEED
-standard.
+coefficient. These match up with our previous analysis. Additionally,
+green_rating has a slightly positive coefficient of .5, but it is not
+statistically significant at the .05 level meaning that when we control
+for all other factors in the data, the positive impact of green rating
+does not exhibit strong enough evidence that it truly exists. Another
+factor worth considering is that that the Energy Star coefficient is
+actually negative. This is interesting because if the developer does
+decide to pursue a green certification, they would need to decide if
+they should get one or both certifications. Though it is not
+statistically significant, we suggest they prioritize compliance with
+the LEED standard.
 
 ## Conclusion
 
 Our final recommendation is: based on the data currently available, we
 do not recommend the developer should invest in the construction
 necessary to achieve a green certification. The data does not provide
-strong enough evidence to indicate that the green premium exists. The $
-5 million dollars could be more appropriately invested elsewhere.
+strong enough evidence to indicate that the green premium exists. The $5
+million dollars could be more appropriately invested elsewhere.
+
+         
+ 
 
 # Flights at ABIA
 
@@ -243,7 +241,7 @@ delays when booking flights or on the day of flight.
 
 ### 1) When is the worst of time of the year for experiencing delays when flying to/out of Austin-Bergstrom International Airport?
 
-![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-17-1.png)
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-16-1.png)
 
 #### 1) Interpretation
 
@@ -261,7 +259,7 @@ overall delays experienced in other months.
 
 ### 2) When is the worst day of the week for experiencing delays when flying to/out of Austin-Bergstrom International Airport?
 
-![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-18-1.png)
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-17-1.png)
 
 #### 2) Interpretation
 
@@ -279,7 +277,7 @@ already at their destination by Friday or Sunday.
 
 ### 3) When is the worst of the month for experiencing delays when flying to/out of Austin-Bergstrom International Airport?
 
-![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-19-1.png)
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-18-1.png)
 
 #### 3) Interpretation
 
@@ -292,7 +290,7 @@ personal time off in case of emergency until the end of the month where
 they then can utilize those unused PTO days for travel, thus affecting
 volume/overall delays.
 
-## Airline Carriers
+### 4) Airline Carriers
 
 We wanted to take this time series analysis to the next step by
 potentially investigating delays in *Destinations* or *Carrier*. First
@@ -340,9 +338,9 @@ ABIA:
 -   CO: Continental Airlines
 -   WN: Southwest Airlines
 
-![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-23-1.png)
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-22-1.png)
 
-![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-24-1.png)
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-23-1.png)
 
 ### 4) Interpretation
 
@@ -359,6 +357,9 @@ Overall based off of the 2008 ABIA flight data, we found that the best
 time of the year to travel with shortest time delays is on the first or
 second Saturday of September. Furthermore, we found that the best
 Airline Carrier for the shortest time delay was Southwest Airlines.
+
+         
+ 
 
 # Portfolio modeling
 
@@ -393,12 +394,12 @@ From the 8 ETFs listed, we defined three portfolios:
         equally among the remaining 6 ETFS.
 
 The equal weight portfolio is chosen as it simply represents our default
-approach. We do not have opinions on the future returns of the ETFs so
-we would default to equal weighting all securities. We include the
+approach. We do not have opinions the future returns of the ETFs so we
+would default to equal weighting all securities. We include the
 foreign-heavy portfolio because we would like to understand how our
 portfolio turns out if we decide to express the view that Chinese and
 Japanese equities will outperform US Equities. Last, we expect that the
-bond-heavy portfolio will be the safer choice, producing the lowest
+bond-heavy portfolio will be the safest choice, producing the lowest
 losses, but providing the least returns. This ‘safe’ portfolio is
 included because we want to understand the portfolio dynamics if we
 decide to invest conservatively.
@@ -418,18 +419,18 @@ simulation are listed below:
 ## Simulation Results
 
 The results of the simulation are about in line with what you would
-expect. The foreign-heavy portfolio appears to be the riskiest, while
-offering the highest potential for return. The equal weight and
-bond-heavy portfolios offer lower expected wealth, but provide less
-variability in the potential outcome. We can now examine some plots and
-summary statistics to better understand the portfolios
+expect. The foreign-heavy portfolio appears to be the riskiest in terms
+of variability and not offering much in terms of expected return to
+compensate The bond-heavy portfolio offers lower expected wealth, but
+provides less variability in the potential outcome. We can now examine
+some plots and summary statistics to better understand the portfolios.
 
 ### Ending Wealth Distribution
 
 As a first look, we examine the distribution of endings wealth by
 portfolio. This gives us a quick and intuitive feel for what our
 portfolios could look like at the end of the 20 day period. The blue
-line below indicates the position of our starting wealth of $ 100,000.
+line below indicates the position of our starting wealth of $100,000.
 This gives us a baseline to compare the rest of the results too by
 highlighting the result if we did not invest in anything. In all three
 portfolios there is a significant portion of the distribution to the
@@ -439,13 +440,13 @@ these investments may not be for you.
 One additional point worth noting here is that the equal weight
 portfolio appears to have a similar distribution to the foreign heavy
 portfolio, except the equal weight portfolio does not suffer from the
-extreme left tail possibilities as the foreign heavy does. This is
-simply a consequence of effective diversification. The foreign heavy
-portfolio is heavily allocated to the Chinese and Japanese markets. In
-periods where those economies perform poorly, this portfolio will
-perform poorly.
+extreme left tail possibilities as the foreign heavy portfolio does.
+This is a direct consequence of effective diversification. The foreign
+heavy portfolio is heavily allocated to the Chinese and Japanese
+markets. In periods where those economies perform poorly, this portfolio
+will perform poorly.
 
-![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-29-1.png)
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-27-1.png)
 
 ### Profits and Summary Statistics
 
@@ -456,7 +457,7 @@ identical to the total ending wealth distributions we just looked at,
 but these present the same information as a relative metric. Perhaps you
 want to understand your expected dollar profit from each portfolio. You
 can see this below:  
-![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-30-1.png)
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-28-1.png)
 
 Next, we provide summary statistics for how the portfolios performed
 across the simulations:
@@ -467,8 +468,6 @@ across the simulations:
 | Equal Weight  | -6,476.81 |     -21,877.84 |  19,577.51 |       1,178.33 | 4,149.52 | 41,455.36 |
 | Foreign Heavy | -8,005.90 |     -39,544.18 |  20,527.38 |         590.89 | 4,671.04 | 60,071.55 |
 
-Summary Stats for Portfolio Profits
-
 There is a lot of information to unpack from the table above.
 
 -   VAR: The 5% value at risk for each portfolio tells us the amount we
@@ -477,7 +476,7 @@ There is a lot of information to unpack from the table above.
     distribution. Even our safest investment, the bond portfolio will
     lose over $2,500 5% of the time! The VARs of both equal weight and
     foreign heavy take a big leap from the bond heavy portfolio, telling
-    us that these portfolios have a much higher chance of turning out
+    us that these portfolios will hurt much more when things turn out
     poorly.
 
 -   Dispersion: The VAR is helpful information, but does not tell us the
@@ -486,9 +485,9 @@ There is a lot of information to unpack from the table above.
     through the minimum profit and get a feel for a best case scenario
     by looking at the max profit. Again, foreign-heavy portfolio does
     not look good. It gives us terrible worst case scenario, but a
-    maximum profit that is not even as large a the equal weight. Last,
-    the mean absolute deviation(MAD) tells us what the average deviation
-    is from the mean. This is probably the best one number summary for
+    maximum profit that is about the same as the equal weight. Last, the
+    mean absolute deviation(MAD) tells us what the average deviation is
+    from the mean. This is probably the best one number summary for
     understanding the risk of each portfolio.
 
 -   Expected Profit: Our average profits tell us what our expected
@@ -497,11 +496,11 @@ There is a lot of information to unpack from the table above.
     heavy portfolio and much less than the equal weight. That’s not a
     lot of compensation for all of the risk you are taking on!
 
-The key takeaways are that the foreign-heavy portfolio is almost
-certainly a bad idea. It provides little reward in the form of expected
-returns to compensate us for potentially devastating worst case losses,
-and higher variability. A more difficult decision is to make a
-determination between the bond-heavy and equal weighted portfolios.
+The key takeaway is that the foreign-heavy portfolio is almost certainly
+a bad idea. It provides little reward in the form of expected returns to
+compensate us for potentially devastating worst case losses, and higher
+variability. A more difficult decision is making a determination between
+the bond-heavy and equal weighted portfolios.
 
 ### Stress Testing: Worst Case Scenarios
 
@@ -513,7 +512,8 @@ have felt in real time. It can be easy to look at summary statistics in
 a calm setting and rationally explore which portfolio is best, but
 actually living through bear markets is a different story all together.
 
-![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-32-1.png)
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-30-1.png)
+
 Ouch! These would have been a pretty painful experiences for just a 20
 day period. The foreign-heavy portfolio stands out again for its
 remarkable ability to disappoint. This portfolio has a one day drop that
@@ -526,13 +526,12 @@ skin investors pause.
 Choosing a portfolio is no simple endeavor. What portfolio is “correct”
 can differ among people based on their particular circumstances. Time
 horizon, liquidity needs, and risk tolerance are among three of the top
-factors, but there can be many variables at play. What we can help to
-do, is provide information that should help investors make the most
-informed decision possible. In this particular case, we were able to
-essentially eliminate the foreign-heavy portfolio from consideration
-which will allow the investor to choose between the remaining
-portfolios, based on which one more closely aligns with their personal
-needs.
+factors, but there can be many variables at play. What we can help with,
+is provide information that should help investors make the most informed
+decision possible. In this particular case, we were able to essentially
+eliminate the foreign-heavy portfolio from consideration which will
+allow the investor to choose between the remaining portfolios, based on
+which one more closely aligns with their personal needs.
 
 # Market Segmentation
 
@@ -555,10 +554,10 @@ our problem: chatter, uncategorized, adult, and spam.
 One of the difficulties in using K-Means Clustering is deciding how many
 clusters to use. We decided to use the Elbow method which looks at the
 total Within-Cluster Sum of Squares as a function of the number of
-clusters; One should choose a number of clusters so that adding another
+clusters; one should choose a number of clusters so that adding another
 cluster doesn’t significantly improve the total WSS.
 
-![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-35-1.png)
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-33-1.png)
 
 Looking at the elbow plot above, we’ll use 6 clusters for our analysis.
 
@@ -579,8 +578,6 @@ department to target.
 | school        | 2.71 |
 | photo_sharing | 2.63 |
 
-Young Parents
-
 **Young Parents:** With interests such as sports fandom, religion, food,
 parenting, and school, this segment represents young parents. They will
 want to provide their children with high quality water.
@@ -595,8 +592,6 @@ want to provide their children with high quality water.
 | outdoors         |  2.74 |
 | photo_sharing    |  2.69 |
 | food             |  2.13 |
-
-Fitness Gurus
 
 **Fitness Gurus:** With health nutrition and personal fitness the
 predominant categories, this grouping represents the healthy and fit
@@ -614,8 +609,6 @@ it.
 | health_nutrition |  2.28 |
 | shopping         |  2.02 |
 
-Millennial Influencers
-
 **Millennial Influencers:** This segment is interested in cooking,
 photo_sharing, fashion, and beauty and likely consists of social media
 influencers. They like to share things with their network and would be
@@ -632,8 +625,6 @@ good marketers of NutrientH20.
 | tv_film          |  1.94 |
 | health_nutrition |  1.73 |
 
-College Student
-
 **College Student:** This segment shows interest in college, online
 gaming, photo sharing, and sports. This sounds like a typical college
 student who likely isn’t too picky about what kind of water they drink.
@@ -648,8 +639,6 @@ student who likely isn’t too picky about what kind of water they drink.
 | photo_sharing | 2.54 |
 | computers     | 2.47 |
 | automotive    | 2.34 |
-
-Traveling Businessman
 
     ##      politics        travel          news photo_sharing     computers 
     ##      8.933042      5.608443      5.294032      2.542940      2.474527 
@@ -671,8 +660,6 @@ water bottles.
 | travel           | 1.10 |
 | health_nutrition | 1.10 |
 | politics         | 1.01 |
-
-Average Consumer
 
 **Average Consumer:** This cluster seems to be very balanced among
 various categories and doesn’t provide too much information into a

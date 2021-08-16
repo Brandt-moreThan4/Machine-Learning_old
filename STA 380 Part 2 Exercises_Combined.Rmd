@@ -13,7 +13,7 @@ output:
 ```
 
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, warning = FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
@@ -34,15 +34,15 @@ library(foreach)
 library(LICORS)  # for kmeans++
 library(arules)
 library(gridExtra)
+options(dplyr.summarise.inform = FALSE)
 
 ```
 
 
 # Green Buildings
+While the stats guru's analysis provided a good baseline for thinking about the issue, we believe his methodology fell short in several areas, particularly when it comes to understanding the potential for confounding variables.
 
-While the stats guru's analysis provided a good baseline for thinking about the issue, we believe his methodology fell short in several areas: particularly when it comes to understanding the potential for confounding variables.
-
-After examining the data, we do not feel that there is sufficient evidence, on a monetary basis, to justify the additional investment to construct the building in line with green certification standards.
+After examining the data, we do not feel that there is sufficient evidence, on a monetary basis, to justify the additional investment necessary to construct the building in line with green certification standards.
 ```{r, include=FALSE}
 
 # Read in the data
@@ -65,9 +65,8 @@ for (col_name in colnames(data_plotting)) {
 
 ```
 
-## Data Cleaning:
-
-First, we can address the data cleaning aspect of the analysis. Are there any adjustments that should be made to the raw data se? The excel guru certainly felt that a certain amount of scrubbing should take place. He decided that because some of the buildings had low occupancy rates they should be excluded from the analysis due to their "weirdness". To explore the validity of this scrubbing we examined the data points that the guru proposes we remove, we manually inspect these observations and we do not find any other "weirdness" associated with these points that would indicate they should be removed. There are 215 data points with leasing rates less than 10 or 2.7% of the original data set. Without finding any reasonable justification, we decide not to remove these observations as we feel our bias should be towards data preservation.
+## Data Cleaning
+First, we can address the data cleaning aspect of the analysis. Are there any adjustments that should be made to the raw data set? The excel guru certainly felt that a certain amount of scrubbing should take place. He decided that because some of the buildings had low occupancy rates they should be excluded from the analysis due to their "weirdness". To explore the validity of this scrubbing we examined the data points that the guru proposed be removed. We manually inspect these observations and we do not find any other "weirdness" associated with these points that would indicate they should be removed. There are 215 data points with leasing rates less than 10 or 2.7% of the original data set. Without finding any reasonable justification, we decide not to remove these observations as we feel our bias should be towards data preservation.
 
 ```{r,include=FALSE}
 # We want to understand what's going on with those data points he's scrubbing.
@@ -75,11 +74,7 @@ First, we can address the data cleaning aspect of the analysis. Are there any ad
 low_occupany = greenbuildings %>% filter(leasing_rate < 10)
 other = greenbuildings %>% filter(leasing_rate >= 10)
 
-# None of the values seem too out of control to me. Just that they may be a bit older buildings.
-# Less than 10 seems pretty arbitrary though. So I'm leaning towards keeping it all.
-# Might be that those buildings just get rented at weird times of the year or something.
-# Either way, removing those data points or keeping them doesn't seem to change our conclusion much
-
+# Compare the the data
 summary(greenbuildings)
 summary(low_occupany)
 
@@ -90,7 +85,7 @@ dim(low_occupany)
 ## Mean vs Median: Who's in Charge?
 *Note: For the purposes of presentation clarity, we have converted all categorical, binary variables from "1", "0" to "Yes","No".*
 
-The guru decided to use the median, over the mean in his analysis and we feel this approach is justified. Support for this position can be seen in the below histogram which depicts the distribution of rents. The rents are clearly right skewed, with a few points that lie far into the right tail. The vertical, blue line indicates the median value, and the vertical red line indicates the mean. We maintain that the appropriate statistic for our purposes is the median, unless there is some justification or reasoning that would indicate that this newly constructed building will be out of the ordinary. From here on, we will confine the majority of our analysis to looking at just the median.
+The guru decided to use the median, over the mean in his analysis and we feel this approach is justified. Support for this position can be seen in the below histogram which depicts the distribution of rents. The rents are clearly right skewed, with a few points that lie far into the right tail. The vertical, blue line indicates the median value, and the vertical red line indicates the mean. We maintain that the appropriate statistic for our purposes is the median, unless there is some justification or reasoning that would indicate that this newly constructed building will be out of the ordinary. From here on, we will confine the majority of our analysis to looking at the median.
 
 ```{r}
 hist(greenbuildings$Rent, breaks = 50,xlab='Rent',main='Histogram of Rent')
@@ -104,7 +99,7 @@ text(100,1000, 'Mean = 28.42 \n Median = 25.16 \n Skew = 3.49')
 ```
 
 ## Big Picture: Green vs Non-Green
-Now, as a starting point we can compare the median rent for green buildings vs non-green buildings. 
+Now, as a starting point we can compare the median rent for green buildings vs non-green buildings, just as the guru did. 
 
 ```{r}
 
@@ -114,12 +109,12 @@ data_plotting %>% group_by(green_rating) %>%  summarise(Median_Rent = median(Ren
 
 ```
 
-The median rent is certainly larger for green buildings vs non green buildings: \$27.60 per square foot for green buildings vs \$25.00 for non-green buildings. But this doesn't really tell the full story. It is too much a leap of faith to claim that this rental difference is due solely to the building's green rating. We need to dig deeper to understand the data further and perhaps discover that the higher median rent differential could be attributed to another variable.
+The median rent is certainly larger for green buildings vs non green buildings: \$27.60 per square foot for green buildings vs \$25.00 for non-green buildings. But this doesn't really tell the full story. It is too much a leap of faith to claim that this rental difference is due solely to the building's green rating. We need to dig deeper to understand the data further and perhaps discover that the higher median rent differential could be attributed to another variable or factor.
 
 
 ## Confounders
 
-We need to do some basic exploration of our data set beyond what we have already done with a goal of understanding how a buildings green rating is related to both rent and other variables. You might hypothesize that green buildings are simply associated with other factors that are really driving the difference in the median rental value. "Going Green" is a newer phenomenon so we might expect that the majority of buildings that have green certifications are newer buildings and that this newness is what drives their rent higher. Perhaps buildings that are built with green certification standard in mind are also built with higher quality overall and that this higher quality, indicated  by building class, is what is determining rent dispersion. We must examine the data for the possibility of these confounders.
+We need to do some basic exploration of our data set beyond what we have already done with the goal of understanding how a building's green rating is related to both rent and other variables. One might hypothesize that green buildings are simply associated with other factors, which are really driving the difference in the median rental value. "Going Green" is a newer phenomenon so we might expect that the majority of buildings that have green certifications are newer buildings and that this newness is what drives their rent higher. Perhaps buildings that are built with green certification standard in mind are also built with higher quality overall and that this higher quality, indicated  by building class, is what is truly determining rent dispersion. We must examine the data for the possibility of these confounders.
 
 To get a feel for the potential interactions between variables in the data, we plot a correlation matrix.
 
@@ -136,21 +131,18 @@ ggcorrplot(corry_matrix, hc.order = TRUE, outline.color = "white") + labs(title=
 
 ```
 
-There are lots of interesting relationships displayed here, but we would like to focus on a few that provide interesting information to the question at hand and test our hypothesized confounders: Age and Building Class.  
+There are lots of interesting relationships displayed here, but we would like to focus on a few that provide interesting information to the question at hand and allow us to test our hypothesized confounders: Age and Building Class.  
 
 
 ### Age
-First, examining the distribution of Age by green and non-green buildings, it's clear that green buildings do tend to be younger. 
+First, examining the distribution of Age by green and non-green buildings, it is clear that green buildings do tend to be younger. 
 
 ```{r}
-
-
 ggplot(data_plotting) + geom_boxplot(aes(x=green_rating,y=age, fill=green_rating)) + labs(title = 'Age Distribution by Greenness')
-
 
 ```
 
-We know that green buildings tend to be younger, but do younger buildings command a rent premium? To uncover a potential relationship here we create a new variable 'younger' that indicates if the building is below the median age of all buildings in our data set. This will allow us to control for the rent between young and old buildings:
+We know that green buildings tend to be younger, but do younger buildings command a rent premium? To uncover a potential relationship here we create a new variable 'younger' that indicates if the building is below the median age of all buildings in our data set. This will allow us to analyze the rent between young and old buildings:
 
 ```{r}
 med_age = median(data_plotting$age)
@@ -177,7 +169,6 @@ One intriguing point is that green buildings command a much higher premium in ol
 
 
 ### Class
-
 What about class? We hypothesized that perhaps green buildings just happen to be built of a higher quality and thus higher class. We can see the evidence of this in the below plot. The majority of green buildings are also class A buildings.
 
 ```{r}
@@ -187,7 +178,7 @@ ggplot(data=green_only, aes(x=class_a, fill=class_a)) + geom_bar(color='black') 
 
 ```
 
-Now we show a breakdown similar to Age, that allows us to control for being a class A building and examine the median of green vs non-green.
+Now we show a breakdown similar to Age, that allows us to control for being a class A building and examine the median rent of green vs non-green.
 
 ```{r}
 data_plotting %>% group_by(green_rating,class_a) %>%  summarise(Median_Rent = median(Rent), count = n()) %>% ggplot(aes(x=class_a,y=Median_Rent, fill=green_rating)) + geom_col(position = 'dodge',color='black') + labs(title = 'Median Rent by Class A & Greenness')  + scale_y_continuous(breaks=seq(0,30,5))
@@ -196,25 +187,6 @@ data_plotting %>% group_by(green_rating,class_a) %>%  summarise(Median_Rent = me
 ```
 
 Class A is the winner in terms of rent, which does not come as a large surprise; we expect higher quality buildings to rent for more. There does appear to be a small advantage within each category for green buildings, but the dominant driver of rent here is the class. 
-
-
-
-
-```{r}
-## Other Insights
-#We would also like to touch on two additional insights.
-
-### Certification Choice
-# 
-# new_fram = data_plotting %>% filter(LEED == 'Yes'|Energystar == 'Yes')
-# new_fram
-# data_plotting %>% group_by(LEED,Energystar) %>% summarise(Median_Rent = median(Rent))
-# 
-# data_plotting %>% group_by(green_rating,class_a) %>%  summarise(Median_Rent = median(Rent), count = n()) %>% ggplot(aes(x=class_a,y=Median_Rent, fill=green_rating)) + geom_col(position = 'dodge',color='black') + labs(title = 'Median Rent by Class A & Greenness')  + scale_y_continuous(breaks=seq(0,30,5))
-
-```
-
-
 
 ## Neighbor Rent
 
@@ -241,17 +213,19 @@ summary(lm_model)
 
 ```
 
-Key takeaways from the model output. Age has a negative coefficient, class_a has a positive coefficient, and cluster rent has a positive coefficient. These match up with our previous analysis. Green Rating has a slightly positive coefficient of .5, but it is not statistically significant at the .05 level meaning that when we control for all of the factors in the data, the positive impact of green rating does not exhibit strong enough evidence that it truly exists. Another factor worth considering is that that the Energy Star coefficient is actually negative. This is interesting because if the developer does consider go ahead with a green certification, they would need to decide if they should get one or both certifications. Though it is not statistically significant, we suggest they prioritize compliance with the LEED standard. 
+Key takeaways from the model output. Age has a negative coefficient, class_a has a positive coefficient, and cluster rent has a positive coefficient. These match up with our previous analysis. Additionally, green_rating has a slightly positive coefficient of .5, but it is not statistically significant at the .05 level meaning that when we control for all other factors in the data, the positive impact of green rating does not exhibit strong enough evidence that it truly exists. Another factor worth considering is that that the Energy Star coefficient is actually negative. This is interesting because if the developer does decide to pursue a green certification, they would need to decide if they should get one or both certifications. Though it is not statistically significant, we suggest they prioritize compliance with the LEED standard. 
 
 ## Conclusion 
 
-Our final recommendation is: based on the data currently available, we do not recommend the developer should invest in the construction necessary to achieve a green certification. The data does not provide strong enough evidence to indicate that the green premium exists. The $ 5 million dollars could be more appropriately invested elsewhere.
+Our final recommendation is: based on the data currently available, we do not recommend the developer should invest in the construction necessary to achieve a green certification. The data does not provide strong enough evidence to indicate that the green premium exists. The $5 million dollars could be more appropriately invested elsewhere.
 
 
 
-
-
-
+\  
+\  
+\  
+\    
+\  
 
 # Flights at ABIA
 ```{r}
@@ -366,7 +340,7 @@ ggplot(data=Weekly, aes(x=DayofMonth, y=name)) +
 The graph above depicts the average delay time by day of the month for 2008. From the graph one can see that the highest delays occurred in the middle and towards the end of the month (day 10+). The lowest time delays occurred during the beginning of the month (days <10). One interpretation could be that most working individuals reserve their personal time off in case of emergency until the end of the month where they then can utilize those unused PTO days for travel, thus affecting volume/overall delays. 
 
 
-## Airline Carriers
+### 4) Airline Carriers
 
 We wanted to take this time series analysis to the next step by potentially investigating delays in *Destinations* or *Carrier*. First we decided which factor to analyze.
 
@@ -490,33 +464,11 @@ Overall based off of the 2008 ABIA flight data, we found that the best time of t
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+\  
+\  
+\  
+\    
+\  
 
 
 
@@ -586,7 +538,7 @@ From the 8 ETFs listed, we defined three portfolios:
   + This portfolio consists allocates 40% to each of the two non-US equity funds (EWJ & MCHI) and spreads the remaining 20% out equally among the remaining 6 ETFS.
   
 
-The equal weight portfolio is chosen as it simply represents our default approach. We do not have opinions on the future returns of the ETFs so we would default to equal weighting all securities. We include the foreign-heavy portfolio because we would like to understand how our portfolio turns out if we decide to express the view that Chinese and Japanese equities will outperform US Equities. Last, we expect that the bond-heavy portfolio will be the safer choice, producing the lowest losses, but providing the least returns. This 'safe' portfolio is included because we want to understand the portfolio dynamics if we decide to invest conservatively.
+The equal weight portfolio is chosen as it simply represents our default approach. We do not have opinions the future returns of the ETFs so we would default to equal weighting all securities. We include the foreign-heavy portfolio because we would like to understand how our portfolio turns out if we decide to express the view that Chinese and Japanese equities will outperform US Equities. Last, we expect that the bond-heavy portfolio will be the safest choice, producing the lowest losses, but providing the least returns. This 'safe' portfolio is included because we want to understand the portfolio dynamics if we decide to invest conservatively.
 
 ```{r, include=FALSE}
 # Create 3 portfolios.
@@ -687,23 +639,14 @@ all_ending_wealths = rbind(equal_weight_wealths,bondy_heavy_wealths)
 all_ending_wealths = rbind(all_ending_wealths,foreign_heavy_wealths)
 
 ```
-```{r}
 
-# # Create an data frame containing info for all portfolios. This makes plotting easier with ggplot.
-# equal_weight_wealths$Type = 'Equal Weight'
-# foreign_heavy_wealths$Type = 'Foreign Heavy'
-# bondy_heavy_wealths$Type = 'Bondy Heavy'
-# 
-# all_ending_wealths = rbind(equal_weight_wealths,bondy_heavy_wealths)
-# all_ending_wealths = rbind(all_ending_wealths,foreign_heavy_wealths)
-```
 ## Simulation Results
-The results of the simulation are about in line with what you would expect. The foreign-heavy portfolio appears to be the riskiest, while offering the highest potential for return. The equal weight and bond-heavy portfolios offer lower expected wealth, but provide less variability in the potential outcome. We can now examine some plots and summary statistics to better understand the portfolios
+The results of the simulation are about in line with what you would expect. The foreign-heavy portfolio appears to be the riskiest in terms of variability and not offering much in terms of expected return to compensate The bond-heavy portfolio offers lower expected wealth, but provides less variability in the potential outcome. We can now examine some plots and summary statistics to better understand the portfolios.
 
 ### Ending Wealth Distribution
-As a first look, we examine the distribution of endings wealth by portfolio. This gives us a quick and intuitive feel for what our portfolios could look like at the end of the 20 day period. The blue line below indicates the position of our starting wealth of \$ 100,000. This gives us a baseline to compare the rest of the results too by highlighting the result if we did not invest in anything. In all three portfolios there is a significant portion of the distribution to the left of this line! If you are horrified by the idea of capital loss, these investments may not be for you.
+As a first look, we examine the distribution of endings wealth by portfolio. This gives us a quick and intuitive feel for what our portfolios could look like at the end of the 20 day period. The blue line below indicates the position of our starting wealth of \$100,000. This gives us a baseline to compare the rest of the results too by highlighting the result if we did not invest in anything. In all three portfolios there is a significant portion of the distribution to the left of this line! If you are horrified by the idea of capital loss, these investments may not be for you.
 
-One additional point worth noting here is that the equal weight portfolio appears to have a similar distribution to the foreign heavy portfolio, except the equal weight portfolio does not suffer from the extreme left tail possibilities as the foreign heavy does. This is simply a consequence of effective diversification. The foreign heavy portfolio is heavily allocated to the Chinese and Japanese markets. In periods where those economies perform poorly, this portfolio will perform poorly.
+One additional point worth noting here is that the equal weight portfolio appears to have a similar distribution to the foreign heavy portfolio, except the equal weight portfolio does not suffer from the extreme left tail possibilities as the foreign heavy portfolio does. This is a direct consequence of effective diversification. The foreign heavy portfolio is heavily allocated to the Chinese and Japanese markets. In periods where those economies perform poorly, this portfolio will perform poorly.
 
 ```{r}
 
@@ -732,19 +675,19 @@ Next, we provide summary statistics for how the portfolios performed across the 
 
 summary_stats = all_ending_wealths %>% group_by(Type) %>% summarise(VAR_.05 = quantile(profit,prob=.05), Minimum_Profit = min(profit),Max_Profit = max(profit), Average_Profit= mean(profit), MAD = mad(profit), Range = max(profit)-min(profit))
 
-knitr::kable(summary_stats,caption = "Summary Stats for Portfolio Profits", digits = 2,format.args = list(big.mark = ",",
+knitr::kable(summary_stats, digits = 2,format.args = list(big.mark = ",",
   scientific = FALSE))
 ```
 There is a lot of information to unpack from the table above.
 
 
-* VAR: The 5% value at risk for each portfolio tells us the amount we can expect to lose *at least* 5% of the time. This is helpful in understanding the risk associated with the left tail of our distribution. Even our safest investment, the bond portfolio will lose over \$2,500 5% of the time! The VARs of both equal weight and foreign heavy take a big leap from the bond heavy portfolio, telling us that these portfolios have a much higher chance of turning out poorly.
+* VAR: The 5% value at risk for each portfolio tells us the amount we can expect to lose *at least* 5% of the time. This is helpful in understanding the risk associated with the left tail of our distribution. Even our safest investment, the bond portfolio will lose over \$2,500 5% of the time! The VARs of both equal weight and foreign heavy take a big leap from the bond heavy portfolio, telling us that these portfolios will hurt much more when things turn out poorly.
 
-* Dispersion: The VAR is helpful information, but does not tell us the full story. For one thing, it ignores the worst case scenarios, but it also ignores all of the upside! We see the worst case scenarios through the minimum profit and get a feel for a best case scenario by looking at the max profit. Again, foreign-heavy portfolio does not look good. It gives us terrible worst case scenario, but a maximum profit that is not even as large a the equal weight.  Last, the mean absolute deviation(MAD) tells us what the average deviation is from the mean. This is probably the best one number summary for understanding the risk of each portfolio. 
+* Dispersion: The VAR is helpful information, but does not tell us the full story. For one thing, it ignores the worst case scenarios, but it also ignores all of the upside! We see the worst case scenarios through the minimum profit and get a feel for a best case scenario by looking at the max profit. Again, foreign-heavy portfolio does not look good. It gives us terrible worst case scenario, but a maximum profit that is about the same as the equal weight. Last, the mean absolute deviation(MAD) tells us what the average deviation is from the mean. This is probably the best one number summary for understanding the risk of each portfolio. 
 
 * Expected Profit: Our average profits tell us what our expected outcomes are. The interesting point here is that the foreign-heavy portfolio only has a marginally higher expected profit than the bond heavy portfolio and much less than the equal weight. That's not a lot of compensation for all of the risk you are taking on! 
 
-The key takeaways are that the foreign-heavy portfolio is almost certainly a bad idea. It provides little reward in the form of expected returns to compensate us for potentially devastating worst case losses, and higher variability. A more difficult decision is to make a determination between the bond-heavy and equal weighted portfolios.
+The key takeaway is that the foreign-heavy portfolio is almost certainly a bad idea. It provides little reward in the form of expected returns to compensate us for potentially devastating worst case losses, and higher variability. A more difficult decision is making a determination between the bond-heavy and equal weighted portfolios.
 
 
 ### Stress Testing: Worst Case Scenarios
@@ -764,23 +707,15 @@ colors = c("Bond_Heavy" = "Green", "Equal_Weight" = "Blue", "Foreign_Heavy" = "R
 
 ggplot(wealth_paths,aes(x=Day)) + geom_line(aes(y=Bond_Heavy, color='Bond_Heavy'),size=1.5) + geom_line(aes(y=Equal_Weight ,color='Equal_Weight'),size=1.5) + geom_line(aes(y=Foreign_Heavy,color='Foreign_Heavy'),size=1.5) + scale_y_continuous(labels = scales::dollar_format()) + labs(x='Day', y='Total Wealth', color='Legend', title = 'Wealth Path for the Worst Performing Periods')  + scale_color_manual(values = colors)
   
-  
 
 
 ``` 
+
 Ouch! These would have been a pretty painful experiences for just a 20 day period. The foreign-heavy portfolio stands out again for its remarkable ability to disappoint. This portfolio has a one day drop that would have been difficult to stomach in real time. Losing such a substantial portion of your wealth in a day would give even the thickest skin investors pause.
 
 ## Concluding Thoughts
 
-Choosing a portfolio is no simple endeavor. What portfolio is "correct" can differ among people based on their particular circumstances. Time horizon, liquidity needs, and risk tolerance are among three of the top factors, but there can be many variables at play. What we can help to do, is provide information that should help investors make the most informed decision possible. In this particular case, we were able to essentially eliminate the foreign-heavy portfolio from consideration which will allow the investor to choose between the remaining portfolios, based on which one more closely aligns with their personal needs.
-
-
-
-
-
-
-
-
+Choosing a portfolio is no simple endeavor. What portfolio is "correct" can differ among people based on their particular circumstances. Time horizon, liquidity needs, and risk tolerance are among three of the top factors, but there can be many variables at play. What we can help with, is provide information that should help investors make the most informed decision possible. In this particular case, we were able to essentially eliminate the foreign-heavy portfolio from consideration which will allow the investor to choose between the remaining portfolios, based on which one more closely aligns with their personal needs.
 
 
 
@@ -820,8 +755,7 @@ sigma = attr(X,"scaled:scale")
 ```
 
 ### Choosing the Number of Clusters
-
-One of the difficulties in using K-Means Clustering is deciding how many clusters to use. We decided to use the Elbow method which looks at the total Within-Cluster Sum of Squares as a function of the number of clusters; One should choose a number of clusters so that adding another cluster doesn’t significantly improve the total WSS.
+One of the difficulties in using K-Means Clustering is deciding how many clusters to use. We decided to use the Elbow method which looks at the total Within-Cluster Sum of Squares as a function of the number of clusters; one should choose a number of clusters so that adding another cluster doesn’t significantly improve the total WSS.
 
 ```{r echo=FALSE}
 # This takes a bit to run
@@ -855,18 +789,16 @@ clust = kmeanspp(X, k=6, nstart=25)
 ```
 
 ### Cluster 1
-
 ```{r echo=FALSE}
-knitr::kable(head(sort((clust$center[1,]*sigma + mu), decreasing=TRUE)),caption = "Young Parents", digits = 2)
+knitr::kable(head(sort((clust$center[1,]*sigma + mu), decreasing=TRUE)), digits = 2)
 ```
 **Young Parents:** With interests such as sports fandom, religion, food, parenting, and school, this segment represents
 young parents. They will want to provide their children with high quality water.
 
 
 ### Cluster 2
-
 ```{r echo=FALSE}
-knitr::kable(head(sort((clust$center[2,]*sigma + mu), decreasing=TRUE)),caption = "Fitness Gurus", digits = 2)
+knitr::kable(head(sort((clust$center[2,]*sigma + mu), decreasing=TRUE)), digits = 2)
 ```
 **Fitness Gurus:** With health nutrition and personal fitness the predominant categories, this grouping represents
 the healthy and fit archetype. They are likely to have a favorite water brand and stick to it.
@@ -875,7 +807,7 @@ the healthy and fit archetype. They are likely to have a favorite water brand an
 ### Cluster 3
 
 ```{r echo=FALSE}
-knitr::kable(head(sort((clust$center[3,]*sigma + mu), decreasing=TRUE)),caption = "Millennial Influencers", digits = 2)
+knitr::kable(head(sort((clust$center[3,]*sigma + mu), decreasing=TRUE)), digits = 2)
 ```
 **Millennial Influencers:** This segment is interested in cooking, photo_sharing, fashion, and beauty and likely consists of social media influencers. They like to share things with their network and would be good marketers of NutrientH20.
 
@@ -884,7 +816,7 @@ knitr::kable(head(sort((clust$center[3,]*sigma + mu), decreasing=TRUE)),caption 
 
 ```{r echo=FALSE}
 
-knitr::kable(head(sort((clust$center[4,]*sigma + mu), decreasing=TRUE)),caption = "College Student", digits = 2)
+knitr::kable(head(sort((clust$center[4,]*sigma + mu), decreasing=TRUE)), digits = 2)
 ```
 **College Student:** This segment shows interest in college, online gaming, photo sharing, and sports. This sounds
 like a typical college student who likely isn't too picky about what kind of water they drink.
@@ -893,7 +825,7 @@ like a typical college student who likely isn't too picky about what kind of wat
 ### Cluster 5
 
 ```{r echo=FALSE}
-knitr::kable(head(sort((clust$center[5,]*sigma + mu), decreasing=TRUE)),caption = "Traveling Businessman", digits = 2)
+knitr::kable(head(sort((clust$center[5,]*sigma + mu), decreasing=TRUE)), digits = 2)
 head(sort((clust$center[5,]*sigma + mu), decreasing=TRUE))
 ```
 **Traveling Businessman:** This segment has interests in politics, travel, and news and represents the traveling businessman.
@@ -903,7 +835,7 @@ They would be a good group to target as they are frequently in airports and buyi
 ### Cluster 6
 
 ```{r echo=FALSE}
-knitr::kable(head(sort((clust$center[6,]*sigma + mu), decreasing=TRUE)),caption = "Average Consumer", digits = 2)
+knitr::kable(head(sort((clust$center[6,]*sigma + mu), decreasing=TRUE)), digits = 2)
 ```
 **Average Consumer:** This cluster seems to be very balanced among various categories and doesn't provide too much
 information into a specific archetype.
@@ -919,10 +851,6 @@ information into a specific archetype.
 6) **Average Consumer**
 
 NutrientH20 can target these market segments to improve their sales and popularity!
-
-
-
-
 
 
 
