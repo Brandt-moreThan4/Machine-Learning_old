@@ -1,3 +1,7 @@
+``` r
+#NOTE!! This whole file will probably take a few minutes to run because of the simulations and cross validations done in certain problems.
+```
+
 # Green Buildings
 
 While the stats guru’s analysis provided a good baseline for thinking
@@ -41,14 +45,14 @@ justification or reasoning that would indicate that this newly
 constructed building will be out of the ordinary. From here on, we will
 confine the majority of our analysis to looking at just the median.
 
-![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-4-1.png)
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-5-1.png)
 
 ## Big Picture: Green vs Non-Green
 
 Now, as a starting point we can compare the median rent for green
 buildings vs non-green buildings.
 
-![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-5-1.png)
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-6-1.png)
 
 The median rent is certainly larger for green buildings vs non green
 buildings: $27.60 per square foot for green buildings vs $25.00 for
@@ -76,7 +80,7 @@ possibility of these confounders.
 To get a feel for the potential interactions between variables in the
 data, we plot a correlation matrix.
 
-![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-6-1.png)
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-7-1.png)
 
 There are lots of interesting relationships displayed here, but we would
 like to focus on a few that provide interesting information to the
@@ -88,7 +92,7 @@ Class.
 First, examining the distribution of Age by green and non-green
 buildings, it’s clear that green buildings do tend to be younger.
 
-![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-7-1.png)
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-8-1.png)
 
 We know that green buildings tend to be younger, but do younger
 buildings command a rent premium? To uncover a potential relationship
@@ -96,7 +100,7 @@ here we create a new variable ‘younger’ that indicates if the building
 is below the median age of all buildings in our data set. This will
 allow us to control for the rent between young and old buildings:
 
-![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-8-1.png)
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-9-1.png)
 
 We can see that younger buildings do have a higher median rent than
 older buildings. This should cast some doubt on the case for the green
@@ -108,7 +112,7 @@ age:
 
     ## `summarise()` has grouped output by 'green_rating'. You can override using the `.groups` argument.
 
-![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-9-1.png)
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-10-1.png)
 
 Interesting results. In both younger and older buildings, those that are
 green have a higher median rent than those that are not green. This
@@ -128,14 +132,14 @@ happen to be built of a higher quality and thus higher class. We can see
 the evidence of this in the below plot. The majority of green buildings
 are also class A buildings.
 
-![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-10-1.png)
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-11-1.png)
 
 Now we show a breakdown similar to Age, that allows us to control for
 being a class A building and examine the median of green vs non-green.
 
     ## `summarise()` has grouped output by 'green_rating'. You can override using the `.groups` argument.
 
-![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-11-1.png)
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-12-1.png)
 
 Class A is the winner in terms of rent, which does not come as a large
 surprise; we expect higher quality buildings to rent for more. There
@@ -155,7 +159,7 @@ although the variance does increase as the cluster rent increases.
 
     ## `geom_smooth()` using formula 'y ~ x'
 
-![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-13-1.png)
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-14-1.png)
 
 ## Regression Model
 
@@ -224,6 +228,137 @@ do not recommend the developer should invest in the construction
 necessary to achieve a green certification. The data does not provide
 strong enough evidence to indicate that the green premium exists. The $
 5 million dollars could be more appropriately invested elsewhere.
+
+# Flights at ABIA
+
+## Time Series
+
+A key component when traveling via flight surrounds *time delays*. In
+fact a standard rule of thumbs is to arrive at an airport approximately
+two hours prior to one’s flight departure. The two key figures part of
+our assignment analyze the time delays surrounding time of year and time
+of day for any given flight to/out of Austin-Bergstrom International
+Airport. These two figures are made to provide insight on minimizing
+delays when booking flights or on the day of flight.
+
+### 1) When is the worst of time of the year for experiencing delays when flying to/out of Austin-Bergstrom International Airport?
+
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-17-1.png)
+
+#### 1) Interpretation
+
+The graph above depicts the average delay time by month for 2008. From
+the graph one can see that the highest delays occurred during the months
+of December, March, and June. The lowest delays occurred during the
+months of September, October, and November. It is understandable that
+the month of December experiences delays as there are several holidays
+that fall during the month and one can expect weather delays. March and
+June are months when students/adults take Spring and Summer break
+respectively, so the amount of delays are expected to be longer due to
+overall volume of travelers. The months that experience the least amount
+of time delays was surprising as the delays were almost a third of
+overall delays experienced in other months.
+
+### 2) When is the worst day of the week for experiencing delays when flying to/out of Austin-Bergstrom International Airport?
+
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-18-1.png)
+
+#### 2) Interpretation
+
+The graph above depicts the average delay time by week day for 2008.
+From the graph one can see that the highest delays occurred Friday and
+Sunday. The lowest delays occurred during Wednesday and Saturday. Friday
+marks the end of a business week while Sunday marks the end to a full
+week, so it is understandable as to why there are longer delays on these
+days. Wednesday can be expected to be slow as it is the middle of a
+work-week and most people are stationary through the intra-week. One may
+find it interesting that Saturday was the second day of the week that
+experiences the least amount of time delays as it is not a work/business
+day. One interpretation could be that most individuals traveling are
+already at their destination by Friday or Sunday.
+
+### 3) When is the worst of the month for experiencing delays when flying to/out of Austin-Bergstrom International Airport?
+
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-19-1.png)
+
+#### 3) Interpretation
+
+The graph above depicts the average delay time by day of the month for
+2008. From the graph one can see that the highest delays occurred in the
+middle and towards the end of the month (day 10+). The lowest time
+delays occurred during the beginning of the month (days \<10). One
+interpretation could be that most working individuals reserve their
+personal time off in case of emergency until the end of the month where
+they then can utilize those unused PTO days for travel, thus affecting
+volume/overall delays.
+
+## Airline Carriers
+
+We wanted to take this time series analysis to the next step by
+potentially investigating delays in *Destinations* or *Carrier*. First
+we decided which factor to analyze.
+
+Destinations:
+
+    ## 
+    ##   ABQ   ATL   AUS   BNA   BOS   BWI   CLE   CLT   CVG   DAL   DEN   DFW   DSM 
+    ##   435  2252 49637   792   368   730   380   659   653  5573  2673  5506     1 
+    ##   DTW   ELP   EWR   FLL   HOU   HRL   IAD   IAH   IND   JAX   JFK   LAS   LAX 
+    ##     1  1349   949   481  2319   367   670  3691   218   226  1358  1231  1733 
+    ##   LBB   LGB   MAF   MCI   MCO   MDW   MEM   MSP   MSY   OAK   OKC   ONT   ORD 
+    ##   692   245   470   459   632   712   834    55   444   236    88   305  2514 
+    ##   ORF   PHL   PHX   RDU   SAN   SEA   SFO   SJC   SLC   SNA   STL   TPA   TUL 
+    ##     1   290  2783   231   719   149   610   968   548   245    95   367    88 
+    ##   TUS 
+    ##   228
+
+Carriers:
+
+    ## 
+    ##    9E    AA    B6    CO    DL    EV    F9    MQ    NW    OH    OO    UA    US 
+    ##  2549 19995  4798  9230  2134   825  2132  2663   121  2986  4015  1866  1458 
+    ##    WN    XE    YV 
+    ## 34876  4618  4994
+
+Based off intuition and value counts we moved further by analyzing the
+main airline carriers:
+
+-   value counts: there were too many unique values and more of a
+    variation for flight destinations, while only a handful of airline
+    carriers
+-   intuition: the destination of flight is usually final (i.e. you are
+    going to see your family in New York for the holidays), which
+    airline carrier selected is less final (you have the option to
+    choose the airline)
+
+Our team personally researched the airline codes and selected what we
+deemed as the most popular airlines and had the most flights out of
+ABIA:
+
+-   AA: American Airlines
+-   DL: Delta Airlines
+-   CO: Continental Airlines
+-   WN: Southwest Airlines
+
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-23-1.png)
+
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-24-1.png)
+
+### 4) Interpretation
+
+The graphs above depict the average delay time by month & week-day for
+2008 grouped by Airline Carrier. From the graphs one can see that the
+highest time delays occurred on Delta Airlines…all that money for a
+ticket and yet the longest delays! The shortest delays occurred on both
+Southwest and American Airlines respectively. Continental airlines was
+on the longer end of time delays, but not nearly as much as Delta.
+
+## Conclusion
+
+Overall based off of the 2008 ABIA flight data, we found that the best
+time of the year to travel with shortest time delays is on the first or
+second Saturday of September. Furthermore, we found that the best
+Airline Carrier for the shortest time delay was Southwest Airlines.
 
 # Portfolio modeling
 
@@ -310,7 +445,7 @@ portfolio is heavily allocated to the Chinese and Japanese markets. In
 periods where those economies perform poorly, this portfolio will
 perform poorly.
 
-![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-19-1.png)
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-29-1.png)
 
 ### Profits and Summary Statistics
 
@@ -321,7 +456,7 @@ identical to the total ending wealth distributions we just looked at,
 but these present the same information as a relative metric. Perhaps you
 want to understand your expected dollar profit from each portfolio. You
 can see this below:  
-![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-20-1.png)
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-30-1.png)
 
 Next, we provide summary statistics for how the portfolios performed
 across the simulations:
@@ -378,7 +513,7 @@ have felt in real time. It can be easy to look at summary statistics in
 a calm setting and rationally explore which portfolio is best, but
 actually living through bear markets is a different story all together.
 
-![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-22-1.png)
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-32-1.png)
 Ouch! These would have been a pretty painful experiences for just a 20
 day period. The foreign-heavy portfolio stands out again for its
 remarkable ability to disappoint. This portfolio has a one day drop that
@@ -423,7 +558,7 @@ total Within-Cluster Sum of Squares as a function of the number of
 clusters; One should choose a number of clusters so that adding another
 cluster doesn’t significantly improve the total WSS.
 
-![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-25-1.png)
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-35-1.png)
 
 Looking at the elbow plot above, we’ll use 6 clusters for our analysis.
 
