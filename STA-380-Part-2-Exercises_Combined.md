@@ -541,6 +541,8 @@ eliminate the foreign-heavy portfolio from consideration which will
 allow the investor to choose between the remaining portfolios, based on
 which one more closely aligns with their personal needs.
 
+           
+
 # Market Segmentation
 
 The data we are analyzing was collected in the course of a
@@ -680,7 +682,7 @@ specific archetype.
 NutrientH20 can target these market segments to improve their sales and
 popularity!
 
-     
+           
 
 # Author Attribution
 
@@ -697,11 +699,16 @@ and the data is stored in a Corpus object.
 ## Training data - Pre-processing, removing the stop words, and Tokenization
 
 For the content of training files, some cleaning and pre-processing is
-done such as: \* Converting all text to lowercase, removing all numbers,
-removing all punctuation, stripping extra white spaces, and removing the
-stop words. \* A DTM(document-term matrix) is created where the words in
-the documents are the columns and each document is a row.
-Standardization of the DTM is done using TF-IDF.
+done such as:
+
+-   Converting all text to lowercase, removing all numbers, removing all
+    punctuation, stripping extra white spaces, and removing the stop
+    words.
+-   A DTM(document-term matrix) is created where the words in the
+    documents are the columns and each document is a row.
+    Standardization of the DTM is done using TF-IDF.
+
+<!-- -->
 
     ## <<DocumentTermMatrix (documents: 2500, terms: 32570)>>
     ## Non-/sparse entries: 537861/80887139
@@ -822,3 +829,293 @@ With a random forest model, the accuracy obtained is 70.6%
 
 Thus, 3 classification models are made and the most accurate model was
 found to be Random Forest with an accuracy of 70.6%
+
+           
+
+# Association Rule Mining
+
+## Reading the data
+
+## Exploring transactions and items
+
+    ## transactions as itemMatrix in sparse format with
+    ##  9835 rows (elements/itemsets/transactions) and
+    ##  169 columns (items) and a density of 0.02609146 
+    ## 
+    ## most frequent items:
+    ##       whole milk other vegetables       rolls/buns             soda 
+    ##             2513             1903             1809             1715 
+    ##           yogurt          (Other) 
+    ##             1372            34055 
+    ## 
+    ## element (itemset/transaction) length distribution:
+    ## sizes
+    ##    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16 
+    ## 2159 1643 1299 1005  855  645  545  438  350  246  182  117   78   77   55   46 
+    ##   17   18   19   20   21   22   23   24   26   27   28   29   32 
+    ##   29   14   14    9   11    4    6    1    1    1    1    3    1 
+    ## 
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##   1.000   2.000   3.000   4.409   6.000  32.000 
+    ## 
+    ## includes extended item information - examples:
+    ##             labels
+    ## 1 abrasive cleaner
+    ## 2 artif. sweetener
+    ## 3   baby cosmetics
+
+    ## [1] 9835  169
+
+The overall structure of the data consisted of 9835 transactions across
+169 items. 2159 transactions with 1 item, 1643 transactions with 2 items
+and so on.
+
+## Top 10 Popular & Unpopular Items
+
+![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-53-1.png)![](STA-380-Part-2-Exercises_Combined_files/figure-markdown_github/unnamed-chunk-53-2.png)
+
+Based on the graphs above the two most common grocery items were whole
+milk and vegetables while the not so common items were baby food and
+storage product. From this analysis, there were two concerning items in
+the top 10 purchased groceries list. Individuals frequently purchase
+soda and shopping bags. Soda’s presence on the list was not a main
+concern, the concern lies in the fact that it held a higher position
+than water. Another insight is the frequent purchase of shopping bags,
+as climate change is a growing issue, reusable bags should be the
+standard alternative and promoted at all grocery stores.
+
+## Building a Model
+
+Deciding the Support- Since we have a lot of items, let’s select a
+minimum support of 0.01 However, as we can see below, keeping a support
+of 0.01 will remove almost half of the items. (Since the support works
+on pair-wise criteria, the exact exclusions will be different but we can
+still get a sense of the support value) Items with support greater than
+threshold 0.01:
+
+    ##    Mode   FALSE    TRUE 
+    ## logical      81      88
+
+Thus, we try with a support of 0.001 Here, we see that we are removing
+12 least-ordered items from the analysis, which is acceptable. Items
+with support greater than threshold 0.001:
+
+    ##    Mode   FALSE    TRUE 
+    ## logical      12     157
+
+## Apriori model
+
+Using a support of 0.001 and confidence of 0.50, i.e. the conditional
+probability of A given B should be at least 50%. We chose
+confidence=0.50 as there are so many items and orders, so its better to
+start with a value somewhere in the middle. Result= We get 5668 rules-
+11 rules with 2 items, 1461 rules with 3 items, 3211 rules with 4 items,
+939 rules with 5 items and 46 rules with 6 items.
+
+    ## Apriori
+    ## 
+    ## Parameter specification:
+    ##  confidence minval smax arem  aval originalSupport maxtime support minlen
+    ##         0.5    0.1    1 none FALSE            TRUE       5   0.001      1
+    ##  maxlen target  ext
+    ##      10  rules TRUE
+    ## 
+    ## Algorithmic control:
+    ##  filter tree heap memopt load sort verbose
+    ##     0.1 TRUE TRUE  FALSE TRUE    2    TRUE
+    ## 
+    ## Absolute minimum support count: 9 
+    ## 
+    ## set item appearances ...[0 item(s)] done [0.00s].
+    ## set transactions ...[169 item(s), 9835 transaction(s)] done [0.01s].
+    ## sorting and recoding items ... [157 item(s)] done [0.00s].
+    ## creating transaction tree ... done [0.00s].
+    ## checking subsets of size 1 2 3 4 5 6 done [0.02s].
+    ## writing ... [5668 rule(s)] done [0.00s].
+    ## creating S4 object  ... done [0.00s].
+
+    ## set of 5668 rules
+    ## 
+    ## rule length distribution (lhs + rhs):sizes
+    ##    2    3    4    5    6 
+    ##   11 1461 3211  939   46 
+    ## 
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##    2.00    3.00    4.00    3.92    4.00    6.00 
+    ## 
+    ## summary of quality measures:
+    ##     support           confidence        coverage             lift       
+    ##  Min.   :0.001017   Min.   :0.5000   Min.   :0.001017   Min.   : 1.957  
+    ##  1st Qu.:0.001118   1st Qu.:0.5455   1st Qu.:0.001729   1st Qu.: 2.464  
+    ##  Median :0.001322   Median :0.6000   Median :0.002135   Median : 2.899  
+    ##  Mean   :0.001668   Mean   :0.6250   Mean   :0.002788   Mean   : 3.262  
+    ##  3rd Qu.:0.001729   3rd Qu.:0.6842   3rd Qu.:0.002949   3rd Qu.: 3.691  
+    ##  Max.   :0.022267   Max.   :1.0000   Max.   :0.043416   Max.   :18.996  
+    ##      count      
+    ##  Min.   : 10.0  
+    ##  1st Qu.: 11.0  
+    ##  Median : 13.0  
+    ##  Mean   : 16.4  
+    ##  3rd Qu.: 17.0  
+    ##  Max.   :219.0  
+    ## 
+    ## mining info:
+    ##       data ntransactions support confidence
+    ##  groceries          9835   0.001        0.5
+
+## Looking at some specific rules
+
+Here we see the top 10 associations sorted by maximum lift. We see that
+all these rules have a very low support, just above the threshold of
+0.001. Also, there are some rules which have a length of 4/5/6. Thus, to
+refine our model we can increase the support threshold and decrease the
+maximum length of rules to 3.
+
+    ##      lhs                        rhs                  support confidence    coverage     lift count
+    ## [1]  {Instant food products,                                                                      
+    ##       soda}                  => {hamburger meat} 0.001220132  0.6315789 0.001931876 18.99565    12
+    ## [2]  {popcorn,                                                                                    
+    ##       soda}                  => {salty snack}    0.001220132  0.6315789 0.001931876 16.69779    12
+    ## [3]  {baking powder,                                                                              
+    ##       flour}                 => {sugar}          0.001016777  0.5555556 0.001830198 16.40807    10
+    ## [4]  {ham,                                                                                        
+    ##       processed cheese}      => {white bread}    0.001931876  0.6333333 0.003050330 15.04549    19
+    ## [5]  {Instant food products,                                                                      
+    ##       whole milk}            => {hamburger meat} 0.001525165  0.5000000 0.003050330 15.03823    15
+    ## [6]  {curd,                                                                                       
+    ##       other vegetables,                                                                           
+    ##       whipped/sour cream,                                                                         
+    ##       yogurt}                => {cream cheese}   0.001016777  0.5882353 0.001728521 14.83409    10
+    ## [7]  {domestic eggs,                                                                              
+    ##       processed cheese}      => {white bread}    0.001118454  0.5238095 0.002135231 12.44364    11
+    ## [8]  {other vegetables,                                                                           
+    ##       tropical fruit,                                                                             
+    ##       white bread,                                                                                
+    ##       yogurt}                => {butter}         0.001016777  0.6666667 0.001525165 12.03058    10
+    ## [9]  {hamburger meat,                                                                             
+    ##       whipped/sour cream,                                                                         
+    ##       yogurt}                => {butter}         0.001016777  0.6250000 0.001626843 11.27867    10
+    ## [10] {domestic eggs,                                                                              
+    ##       other vegetables,                                                                           
+    ##       tropical fruit,                                                                             
+    ##       whole milk,                                                                                 
+    ##       yogurt}                => {butter}         0.001016777  0.6250000 0.001626843 11.27867    10
+
+## Refined Model
+
+Change support to 0.003, maxlength to 4. Result = A set of 414 rules- 5
+rules with 2 items, 281 rules with 3 items, 128 rules with 4 items.
+
+    ## Apriori
+    ## 
+    ## Parameter specification:
+    ##  confidence minval smax arem  aval originalSupport maxtime support minlen
+    ##         0.5    0.1    1 none FALSE            TRUE       5   0.003      1
+    ##  maxlen target  ext
+    ##       4  rules TRUE
+    ## 
+    ## Algorithmic control:
+    ##  filter tree heap memopt load sort verbose
+    ##     0.1 TRUE TRUE  FALSE TRUE    2    TRUE
+    ## 
+    ## Absolute minimum support count: 29 
+    ## 
+    ## set item appearances ...[0 item(s)] done [0.00s].
+    ## set transactions ...[169 item(s), 9835 transaction(s)] done [0.00s].
+    ## sorting and recoding items ... [136 item(s)] done [0.00s].
+    ## creating transaction tree ... done [0.00s].
+    ## checking subsets of size 1 2 3 4 done [0.00s].
+    ## writing ... [414 rule(s)] done [0.00s].
+    ## creating S4 object  ... done [0.00s].
+
+    ## set of 414 rules
+    ## 
+    ## rule length distribution (lhs + rhs):sizes
+    ##   2   3   4 
+    ##   5 281 128 
+    ## 
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    ##   2.000   3.000   3.000   3.297   4.000   4.000 
+    ## 
+    ## summary of quality measures:
+    ##     support           confidence        coverage             lift      
+    ##  Min.   :0.003050   Min.   :0.5000   Min.   :0.003864   Min.   :1.957  
+    ##  1st Qu.:0.003355   1st Qu.:0.5235   1st Qu.:0.005999   1st Qu.:2.130  
+    ##  Median :0.003965   Median :0.5543   Median :0.007117   Median :2.421  
+    ##  Mean   :0.004778   Mean   :0.5701   Mean   :0.008532   Mean   :2.497  
+    ##  3rd Qu.:0.005186   3rd Qu.:0.6069   3rd Qu.:0.009558   3rd Qu.:2.749  
+    ##  Max.   :0.022267   Max.   :0.7895   Max.   :0.043416   Max.   :4.949  
+    ##      count       
+    ##  Min.   : 30.00  
+    ##  1st Qu.: 33.00  
+    ##  Median : 39.00  
+    ##  Mean   : 46.99  
+    ##  3rd Qu.: 51.00  
+    ##  Max.   :219.00  
+    ## 
+    ## mining info:
+    ##       data ntransactions support confidence
+    ##  groceries          9835   0.003        0.5
+
+## Analysis
+
+(Sorted by highest lift) The rules make sense as they are products which
+are related and bought often very often.
+
+    ##      lhs                     rhs                    support confidence    coverage     lift count
+    ## [1]  {herbs,                                                                                     
+    ##       whole milk}         => {root vegetables}  0.004168785  0.5394737 0.007727504 4.949369    41
+    ## [2]  {herbs,                                                                                     
+    ##       other vegetables}   => {root vegetables}  0.003863752  0.5000000 0.007727504 4.587220    38
+    ## [3]  {curd,                                                                                      
+    ##       tropical fruit,                                                                            
+    ##       whole milk}         => {yogurt}           0.003965430  0.6093750 0.006507372 4.368224    39
+    ## [4]  {citrus fruit,                                                                              
+    ##       root vegetables,                                                                           
+    ##       tropical fruit}     => {other vegetables} 0.004473818  0.7857143 0.005693950 4.060694    44
+    ## [5]  {butter,                                                                                    
+    ##       other vegetables,                                                                          
+    ##       tropical fruit}     => {yogurt}           0.003050330  0.5555556 0.005490595 3.982426    30
+    ## [6]  {tropical fruit,                                                                            
+    ##       whipped/sour cream,                                                                        
+    ##       whole milk}         => {yogurt}           0.004372140  0.5512821 0.007930859 3.951792    43
+    ## [7]  {butter,                                                                                    
+    ##       tropical fruit,                                                                            
+    ##       whole milk}         => {yogurt}           0.003355363  0.5409836 0.006202339 3.877969    33
+    ## [8]  {root vegetables,                                                                           
+    ##       tropical fruit,                                                                            
+    ##       whipped/sour cream} => {other vegetables} 0.003355363  0.7333333 0.004575496 3.789981    33
+    ## [9]  {cream cheese,                                                                              
+    ##       whipped/sour cream} => {yogurt}           0.003355363  0.5238095 0.006405694 3.754859    33
+    ## [10] {cream cheese,                                                                              
+    ##       other vegetables,                                                                          
+    ##       whole milk}         => {yogurt}           0.003457041  0.5151515 0.006710727 3.692795    34
+
+## To get a dataframe of rules:
+
+    ##                                            rules     support confidence
+    ## 1                      {cereals} => {whole milk} 0.003660397  0.6428571
+    ## 2       {specialty cheese} => {other vegetables} 0.004270463  0.5000000
+    ## 3                   {rice} => {other vegetables} 0.003965430  0.5200000
+    ## 4                         {rice} => {whole milk} 0.004677173  0.6133333
+    ## 5                {baking powder} => {whole milk} 0.009252669  0.5229885
+    ## 6  {herbs,root vegetables} => {other vegetables} 0.003863752  0.5507246
+    ## 7  {herbs,other vegetables} => {root vegetables} 0.003863752  0.5000000
+    ## 8        {herbs,root vegetables} => {whole milk} 0.004168785  0.5942029
+    ## 9        {herbs,whole milk} => {root vegetables} 0.004168785  0.5394737
+    ## 10      {herbs,other vegetables} => {whole milk} 0.004067107  0.5263158
+    ##       coverage     lift count
+    ## 1  0.005693950 2.515917    36
+    ## 2  0.008540925 2.584078    42
+    ## 3  0.007625826 2.687441    39
+    ## 4  0.007625826 2.400371    46
+    ## 5  0.017691917 2.046793    91
+    ## 6  0.007015760 2.846231    38
+    ## 7  0.007727504 4.587220    38
+    ## 8  0.007015760 2.325502    41
+    ## 9  0.007727504 4.949369    41
+    ## 10 0.007727504 2.059815    40
+
+Thus, we successfully completed an association analysis on the grocery
+dataset to recommend new products to consumers based on the products in
+their carts.

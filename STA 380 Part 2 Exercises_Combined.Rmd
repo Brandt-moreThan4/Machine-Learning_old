@@ -45,6 +45,7 @@ library(slam)
 library(proxy)
 library(magrittr)
 library(Rcpp)
+library(formattable)
 
 options(dplyr.summarise.inform = FALSE)
 
@@ -731,15 +732,12 @@ Ouch! These would have been a pretty painful experiences for just a 20 day perio
 Choosing a portfolio is no simple endeavor. What portfolio is "correct" can differ among people based on their particular circumstances. Time horizon, liquidity needs, and risk tolerance are among three of the top factors, but there can be many variables at play. What we can help with, is provide information that should help investors make the most informed decision possible. In this particular case, we were able to essentially eliminate the foreign-heavy portfolio from consideration which will allow the investor to choose between the remaining portfolios, based on which one more closely aligns with their personal needs.
 
 
-
-
-
-
-
-
-
-
-
+\  
+\  
+\  
+\  
+\  
+\  
 
 
 
@@ -869,6 +867,9 @@ NutrientH20 can target these market segments to improve their sales and populari
 \  
 \  
 \  
+\  
+\  
+\  
 
 # Author Attribution
 
@@ -922,6 +923,7 @@ articles_raw = Corpus(VectorSource(files_combined))
 
 ## Training data - Pre-processing, removing the stop words, and Tokenization
 For the content of training files, some cleaning and pre-processing is done such as:
+
 * Converting all text to lowercase, removing all numbers, removing all punctuation, stripping extra white spaces, and removing the stop words.
 * A DTM(document-term matrix) is created where the words in the documents are the columns and each document is a row. Standardization of the DTM is done using TF-IDF.
 
@@ -1104,3 +1106,125 @@ sum(rf_check$mark)*100/nrow(rf_check)
 
 ## Conclusion
 Thus, 3 classification models are made and the most accurate model was found to be Random Forest with an accuracy of 70.6%
+
+
+\  
+\  
+\  
+\  
+\  
+\  
+
+
+# Association Rule Mining
+
+## Reading the data
+
+```{r}
+groceries = read.transactions("groceries.txt", format = "basket", sep = ",", rm.duplicates = FALSE)
+```
+
+## Exploring transactions and items
+
+```{r}
+summary(groceries)
+dim(groceries)
+```
+
+The overall structure of the data consisted of 9835 transactions across 169 items. 2159 transactions with 1 item, 1643 transactions with 2 items and so on.
+
+## Top 10 Popular & Unpopular Items
+
+```{r}
+DEC = as.data.frame( sort(itemFrequency(groceries), decreasing=FALSE)[0:10] )
+DEC$Val =  percent(DEC$`sort(itemFrequency(groceries), decreasing = FALSE)[0:10]`)
+DEC$name = colnames( t(DEC) )
+
+ggplot(data=DEC, aes(x= reorder(name, -Val), y=Val)) +
+  geom_bar(stat="identity", fill="darkred") +
+  geom_text(aes(label=Val), vjust=1.6, color="white", size=3.5)+
+  theme_minimal()+
+  xlab("Rank") +
+  ylab("Least Ordered Items") +
+  theme( axis.title.y = element_text(color="darkred", size=14, face="bold"),
+         axis.title.x = element_text(color="darkred", size=14, face="bold"),
+         axis.text.x = element_text(angle = 90))
+
+INC = as.data.frame( sort(itemFrequency(groceries), decreasing=TRUE)[0:10] )
+INC$Val = percent(INC$`sort(itemFrequency(groceries), decreasing = TRUE)[0:10]`)
+INC$name = colnames( t(INC) )
+
+ggplot(data=INC, aes(x= reorder(name, -Val), y=Val)) +
+  geom_bar(stat="identity", fill="darkgreen") +
+  geom_text(aes(label=Val), vjust=1.6, color="white", size=3.5)+
+  theme_minimal()+
+  xlab("Rank") +
+  ylab("Top Ordered Items") +
+  theme( axis.title.y = element_text(color="darkgreen", size=14, face="bold"),
+         axis.title.x = element_text(color="darkgreen", size=14, face="bold"),
+         axis.text.x = element_text(angle = 90))
+```
+
+Based on the graphs above the two most common grocery items were whole milk and vegetables while the not so common items were baby food and storage product. From this analysis, there were two concerning items in the top 10 purchased groceries list. Individuals frequently purchase soda and shopping bags. Soda's presence on the list was not a main concern, the concern lies in the fact that it held a higher position than water. Another insight is the frequent purchase of shopping bags, as climate change is a growing issue, reusable bags should be the standard alternative and promoted at all grocery stores. 
+
+## Building a Model 
+Deciding the Support-
+Since we have a lot of items, let's select a minimum support of 0.01
+However, as we can see below, keeping a support of 0.01 will remove almost half of the items.
+(Since the support works on pair-wise criteria, the exact exclusions will be different but we can still get a sense of the support value)
+Items with support greater than threshold 0.01:
+
+```{r}
+summary(itemFrequency(groceries)>0.01)
+```
+
+Thus, we try with a support of 0.001
+Here, we see that we are removing 12 least-ordered items from the analysis, which is acceptable.
+Items with support greater than threshold 0.001:
+
+```{r}
+summary(itemFrequency(groceries)>0.001)
+```
+
+## Apriori model
+Using a support of 0.001 and confidence of 0.50, i.e. the conditional probability of A given B should be at least 50%. We chose confidence=0.50 as there are so many items and orders, so its better to start with a value somewhere in the middle.
+Result= We get 5668 rules- 11 rules with 2 items, 1461 rules with 3 items, 3211 rules with 4 items, 939 rules with 5 items and 46 rules with 6 items.
+
+```{r}
+basket_model1 = apriori(groceries, parameter = list(support = 0.001, confidence = 0.50, target='rules'))
+summary(basket_model1)
+```
+
+## Looking at some specific rules
+Here we see the top 10 associations sorted by maximum lift. We see that all these rules have a very low support, just above the threshold of 0.001. Also, there are some rules which have a length of 4/5/6. Thus, to refine our model we can increase the support threshold and decrease the maximum length of rules to 3. 
+
+```{r}
+arules::inspect(sort(basket_model1, by = 'lift')[1:10])
+```
+
+## Refined Model
+Change support to 0.003, maxlength to 4.
+Result = A set of 414 rules- 5 rules with 2 items, 281 rules with 3 items, 128 rules with 4 items.
+
+```{r}
+basket_model2 = apriori(groceries, parameter = list(support = 0.003, confidence = 0.50, target='rules', maxlen = 4))
+summary(basket_model2)
+```
+
+## Analysis
+(Sorted by highest lift)
+The rules make sense as they are products which are related and bought often very often. 
+
+```{r}
+arules::inspect(sort(basket_model2, by = 'lift')[1:10])
+```
+
+## To get a dataframe of rules:
+
+```{r}
+df = as(basket_model2, "data.frame")
+df[1:10,]
+```
+
+Thus, we successfully completed an association analysis on the grocery dataset to recommend new products to consumers based on the products in their carts. 
+
